@@ -14,7 +14,6 @@ asleep(millis) 	Suspends the script for n milliseconds. Doesn't block with concu
 atExit(f, id) 	Add callback function when the script dies
 clear(handle) 	Clear data from a file.
 clearLog() 	Clears the script’s logs.
-clearPort(portNumber) 	Clear data from a port.
 closeTail(pid) 	Close the tail window of a script.
 disableLog(fn) 	Disables logging for the given NS function.
 enableLog(fn) 	Enables logging for the given NS function.
@@ -24,22 +23,16 @@ formatNumber(n, fractionalDigits, suffixStart, isInteger) 	Format a number.
 formatPercent(n, fractionalDigits, suffixStart) 	Format a number as a percentage.
 formatRam(n, fractionalDigits) 	Format a number as an amount of ram.
 getFunctionRamCost(name) 	Get the ram cost of a netscript function.
-getPortHandle(portNumber) 	Get all data on a port.
 getScriptLogs(fn, host, args) 	Get all the logs of a script.
 getScriptName() 	Returns the current script name.
 isLogEnabled(fn) 	Checks the status of the logging for the given NS function.
 moveTail(x, y, pid) 	Move a tail window.
-mv(host, source, destination) 	Move a file on the target server.
-nextPortWrite(port) 	Listen for a port write.
 nFormat(n, format) 	Format a number using the numeral library. This function is deprecated and will be removed in 2.4.
-peek(portNumber) 	Get a copy of the data from a port without popping it.
 print(args) 	Prints one or more values or variables to the script’s logs.
 printf(format, args) 	Prints a formatted string to the script’s logs.
 printRaw(node) 	Prints a ReactNode to the script logs.
 prompt(txt, options) 	Prompt the player with an input modal.
 ramOverride(ram) 	Change the current static RAM allocation of the script.
-read(filename) 	Read content of a file.
-readPort(portNumber) 	Read data from a port.
 renamePurchasedServer(hostname, newName) 	Rename a purchased server.
 resizeTail(width, height, pid) 	Resize a tail window.
 setTitle(title, pid) 	Set the title of the tail window of a script.
@@ -51,11 +44,7 @@ toast(msg, variant, duration) 	Queue a toast (bottom-right notification).
 tprint(args) 	Prints one or more values or variables to the Terminal.
 tprintf(format, values) 	Prints a raw value or a variable to the Terminal.
 tprintRaw(node) 	Prints a ReactNode to the terminal.
-tryWritePort(portNumber, data) 	Attempt to write to a port.
 vsprintf(format, args) 	Format a string with an array of arguments.
-wget(url, target, host) 	Download a file from the internet.
-write(filename, data, mode) 	Write data to a file.
-writePort(portNumber, data) 	Write data to a port.
 
 NS C-like functions
 ===================
@@ -64,7 +53,6 @@ Method 	Description
 brutessh(host) 	Runs BruteSSH.exe on a server.
 deleteServer(host) 	Delete a purchased server.
 exec(script, hostname, threadOrOptions, args) 	Start another script on any server.
-fileExists(filename, host) 	Check if a file exists.
 ftpcrack(host) 	Runs FTPCrack.exe on a server.
 getBitNodeMultipliers(n, lvl) 	Get the current Bitnode multipliers.
 getFavorToDonate() 	Returns the amount of Faction favor required to be able to donate to a faction.
@@ -73,7 +61,7 @@ getHackingLevel() 	Returns the player’s current hacking level.
 getHackingMultipliers() 	Get hacking related multipliers.
 getHacknetMultipliers() 	Get hacknet related multipliers.
 getHackTime(host) 	Get the execution time of a hack() call.
-getHostname() 	Returns a string with the hostname of the server that the script is running on.
+script is running on.
 getMoneySources() 	Get information about the sources of income for this run.
 getPlayer() 	Get information about the player.
 getPurchasedServerCost(ram) 	Get cost of purchasing a server.
@@ -118,15 +106,12 @@ isRunning(script, host, args) 	Check if a script is running.
 kill(pid) 	Terminate the script with the provided PID.
 kill(filename, hostname, args) 	Terminate the script(s) with the provided filename, hostname, and script arguments.
 killall(host, safetyguard) 	Terminate all scripts on a server.
-ls(host, substring) 	List files on a server.
 nuke(host) 	Runs NUKE.exe on a server.
 ps(host) 	List running scripts on a server.
 purchaseServer(hostname, ram) 	Purchase a server.
 relaysmtp(host) 	Runs relaySMTP.exe on a server.
-rm(name, host) 	Delete a file.
 run(script, threadOrOptions, args) 	Start another script on the current server.
 scan(host) 	Get the list of servers connected to a server.
-scp(files, destination, source) 	Copy file between servers.
 scriptKill(script, host) 	Kill all scripts with a filename.
 scriptRunning(script, host) 	Check if any script with a filename is running.
 serverExists(host) 	Returns a boolean denoting whether or not the specified server exists.
@@ -136,3 +121,86 @@ sqlinject(host) 	Runs SQLInject.exe on a server.
 upgradePurchasedServer(hostname, ram) 	Upgrade a purchased server's RAM.
 weaken(host, opts) 	Reduce a server's security level.
 weakenAnalyze(threads, cores) 	Predict the effect of weaken.
+
+NS Attributes
+=============
+
+Free
+----
+  readonly codingcontract: CodingContract;
+  readonly go: Go;
+  readonly stock: TIX;
+  readonly formulas: Formulas;
+  readonly infiltration: Infiltration;
+  readonly ui: UserInterface;
+
+Expensive
+---------
+  readonly hacknet: Hacknet; // 4 GB
+
+Spoilers
+--------
+  readonly bladeburner: Bladeburner;
+  readonly gang: Gang;
+  readonly sleeve: Sleeve;
+  readonly stanek: Stanek;
+  readonly corporation: Corporation;
+  readonly singularity: Singularity;
+  readonly grafting: Grafting;
+
+
+Language Definitions
+====================
+
+- Free      : Requires 0GB to use.
+- Cheap     : Will theoretically allow running a script in 2.0GB or less.
+- Expensive : Any scripts will need more than 2.0GB to run.
+
+
+File API
+========
+
+Dependencies
+- getHostname() 	Returns a string with the hostname of the server that the script is running on.
+
+Free
+- mv(host, source, destination) 	Move a file on the target server.
+- read(filename) 	Read content of a file.
+- wget(url, target, host) 	Download a file from the internet.
+- write(filename, data, mode) 	Write data to a file.
+Cheap
+- fileExists(filename, host) 	Check if a file exists.
+- ls(host, substring) 	List files on a server.
+Expensive
+- rm(name, host) 	Delete a file.
+- scp(files, destination, source) 	Copy file between servers.
+
+
+Pipe API
+========
+
+Free
+- getPortHandle(portNumber) 	Get a handle to a NetScript port
+- clearPort(portNumber) 	Clear data from a port.
+- nextPortWrite(port) 	Listen for a port write.
+- peek(portNumber) 	Get a copy of the data from a port without popping it.
+- readPort(portNumber) 	Read data from a port.
+- tryWritePort(portNumber, data) 	Attempt to write to a port.
+- writePort(portNumber, data) 	Write data to a port.
+
+export interface NetscriptPort {
+  write(value: any): any;
+  tryWrite(value: any): boolean;
+  nextWrite(): Promise<void>;
+  read(): any;
+  peek(): any;
+  full(): boolean;
+  empty(): boolean;
+  clear(): void;
+}
+
+Question: Do the ns functions cause collisions? (Probably.)
+Question: Do the NetscriptPort methods cause collisions?
+- File stuff?  Yes.
+- Pipe stuff?  Yes.
+- NetscriptPort? No!
