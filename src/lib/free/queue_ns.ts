@@ -4,7 +4,7 @@ export namespace asyncio {
 
     namespace PortNumberRegistry {
         const start_port = 1024
-        const used_ports = new Map<number, any>
+        const used_ports = new Map<number, null>
         const registry = new FinalizationRegistry((port_num: number) => {
             used_ports.delete(port_num)
         })
@@ -17,7 +17,7 @@ export namespace asyncio {
 
         export function get_port_number(obj: any): number {
             const next = next_port_number()
-            used_ports.set(next, obj)
+            used_ports.set(next, null)
             registry.register(obj, next)
             return next
         }
@@ -36,7 +36,7 @@ export namespace asyncio {
         }
         set() {
             this._is_set = true
-            this.port.write("event")
+            this.port.write("Event")
             this.port.clear()
         }
         clear() {
@@ -73,58 +73,61 @@ export namespace asyncio {
 
     /** Asynchronous queue.  FIXME: join() / task_done() semantics differ. */
     export class AsyncQueue<Type> {
-        private queue: Array<Type>
-        private maxsize: number
+        private queue: NetscriptPort
         private done_event: Event
-        private get_event: MomentaryEvent
-        private put_event: MomentaryEvent
+        private next_read: MomentaryEvent
+        private count: number
 
-        constructor(ns: NS, maxsize = Infinity) {
-            this.queue = new Array<Type>()
+        constructor(ns: NS) {
+            this.queue = ns.getPortHandle(PortNumberRegistry.get_port_number(this))
             this.done_event = new Event(ns)
-            this.get_event = new MomentaryEvent(ns)
-            this.put_event = new MomentaryEvent(ns)
-            this.maxsize = maxsize
+            this.count = 0
+            this.next_read = new MomentaryEvent(ns)
         }
         empty() {
-            return this.queue.length == 0
+            return this.queue.empty()
         }
         full() {
-            return this.queue.length == this.maxsize
+            return this.queue.full()
         }
         async get(): Promise<Type> {
             let value = this.get_nowait()
             while (value === undefined) {
-                await this.put_event.wait()
+                await this.queue.nextWrite()
                 value = this.get_nowait()
             }
             return value
         }
         get_nowait(): Type | undefined {
-            const value = this.queue.shift()
-            if (value !== undefined) {
-                this.get_event.set()
-                if (this.empty())
-                    this.done_event.set()
-            }
+            const value = this.queue.read()
+            if (value == "NULL PORT DATA")
+                return undefined
+            this.count--
+            if (this.empty())
+                this.done_event.set()
             return value
+
         }
         async join() {
             await this.done_event.wait()
         }
         async put(item: Type) {
-            this.put_nowait(item)
+            let success = this.put_nowait(item)
+            while (!success) {
+                await this.next_read.wait()
+                success = this.put_nowait(item)
+            }
         }
         put_nowait(item: Type): boolean {
-            if (this.full())
-                return false
-            this.queue.push(item)
-            this.done_event.clear()
-            this.put_event.set()
-            return true
+            const success = this.queue.tryWrite(item)
+            if (success) {
+                this.count++
+                this.done_event.clear()
+            }
+            return success
         }
         qsize(): number {
-            return this.queue.length
+            return this.count
         }
     }
 }

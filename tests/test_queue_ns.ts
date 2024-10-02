@@ -1,6 +1,14 @@
 import { NS } from "@ns";
 import { asyncio } from "lib/free/queue_ns";
 
+async function test_registry(ns: NS) {
+    for (let i = 0; i < 10; i++) {
+        const event1 = new asyncio.Event(ns);
+        const event2 = new asyncio.Event(ns);
+        await ns.asleep(1000)
+    }
+}
+
 async function test_event(ns: NS, event: asyncio.Event) {
     for (let i = 0; i < 10; i++) {
         await event.wait()
