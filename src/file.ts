@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { asyncio } from "lib/free/queue_ns";
+import * as asyncio from "/lib/free/asyncio/queue_ns";
 
 async function test_registry(ns: NS) {
     for (let i = 0; i < 10; i++) {
