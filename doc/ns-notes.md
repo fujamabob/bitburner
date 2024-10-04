@@ -10,41 +10,48 @@ Free NS functions
 
 Method 	Description
 alert(msg) 	Open up a message box.
+prompt(txt, options) 	Prompt the player with an input modal.
+toast(msg, variant, duration) 	Queue a toast (bottom-right notification).
+
 asleep(millis) 	Suspends the script for n milliseconds. Doesn't block with concurrent calls.
+sleep(millis) 	Suspends the script for n milliseconds.
 atExit(f, id) 	Add callback function when the script dies
-clear(handle) 	Clear data from a file.
-clearLog() 	Clears the script’s logs.
-closeTail(pid) 	Close the tail window of a script.
-disableLog(fn) 	Disables logging for the given NS function.
-enableLog(fn) 	Enables logging for the given NS function.
 exit() 	Terminates the current script immediately.
-flags(schema) 	Parse command line flags.
-formatNumber(n, fractionalDigits, suffixStart, isInteger) 	Format a number.
-formatPercent(n, fractionalDigits, suffixStart) 	Format a number as a percentage.
-formatRam(n, fractionalDigits) 	Format a number as an amount of ram.
-getFunctionRamCost(name) 	Get the ram cost of a netscript function.
-getScriptLogs(fn, host, args) 	Get all the logs of a script.
-getScriptName() 	Returns the current script name.
-isLogEnabled(fn) 	Checks the status of the logging for the given NS function.
-moveTail(x, y, pid) 	Move a tail window.
-nFormat(n, format) 	Format a number using the numeral library. This function is deprecated and will be removed in 2.4.
+ramOverride(ram) 	Change the current static RAM allocation of the script.
+
+clearLog() 	Clears the script’s logs.
 print(args) 	Prints one or more values or variables to the script’s logs.
 printf(format, args) 	Prints a formatted string to the script’s logs.
 printRaw(node) 	Prints a ReactNode to the script logs.
-prompt(txt, options) 	Prompt the player with an input modal.
-ramOverride(ram) 	Change the current static RAM allocation of the script.
-renamePurchasedServer(hostname, newName) 	Rename a purchased server.
+
+closeTail(pid) 	Close the tail window of a script.
+moveTail(x, y, pid) 	Move a tail window.
+tail(fn, host, args) 	Open the tail window of a script.
 resizeTail(width, height, pid) 	Resize a tail window.
 setTitle(title, pid) 	Set the title of the tail window of a script.
-sleep(millis) 	Suspends the script for n milliseconds.
-sprintf(format, args) 	Format a string.
-tail(fn, host, args) 	Open the tail window of a script.
+
+disableLog(fn) 	Disables logging for the given NS function.
+enableLog(fn) 	Enables logging for the given NS function.
+isLogEnabled(fn) 	Checks the status of the logging for the given NS function.
+
+flags(schema) 	Parse command line flags.
+
+formatNumber(n, fractionalDigits, suffixStart, isInteger) 	Format a number.
+formatPercent(n, fractionalDigits, suffixStart) 	Format a number as a percentage.
+formatRam(n, fractionalDigits) 	Format a number as an amount of ram.
 tFormat(milliseconds, milliPrecision) 	Format time to a readable string.
-toast(msg, variant, duration) 	Queue a toast (bottom-right notification).
+sprintf(format, args) 	Format a string.
+vsprintf(format, args) 	Format a string with an array of arguments.
+
+getFunctionRamCost(name) 	Get the ram cost of a netscript function.
+getScriptLogs(fn, host, args) 	Get all the logs of a script.
+getScriptName() 	Returns the current script name.
+
+renamePurchasedServer(hostname, newName) 	Rename a purchased server.
+
 tprint(args) 	Prints one or more values or variables to the Terminal.
 tprintf(format, values) 	Prints a raw value or a variable to the Terminal.
 tprintRaw(node) 	Prints a ReactNode to the terminal.
-vsprintf(format, args) 	Format a string with an array of arguments.
 
 NS C-like functions
 ===================
@@ -141,10 +148,10 @@ Expensive
 Spoilers
 --------
   readonly bladeburner: Bladeburner;
-  readonly gang: Gang;
-  readonly sleeve: Sleeve;
+  readonly gang: Gang;               // SF-2
+  readonly sleeve: Sleeve;           // SF-10
   readonly stanek: Stanek;
-  readonly corporation: Corporation;
+  readonly corporation: Corporation; // SF -3
   readonly singularity: Singularity;
   readonly grafting: Grafting;
 
@@ -164,6 +171,7 @@ Dependencies
 - getHostname() 	Returns a string with the hostname of the server that the script is running on.
 
 Free
+- clear(handle) 	Clear data from a file.
 - mv(host, source, destination) 	Move a file on the target server.
 - read(filename) 	Read content of a file.
 - wget(url, target, host) 	Download a file from the internet.
