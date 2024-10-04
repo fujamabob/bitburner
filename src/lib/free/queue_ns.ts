@@ -23,7 +23,6 @@ export namespace asyncio {
         }
     }
 
-
     /** Stateful event.  Allows waiters through while set. */
     export class Event {
         private _is_set: boolean
