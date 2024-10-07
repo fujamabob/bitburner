@@ -1,29 +1,32 @@
 import { NS } from "@ns";
-import * as asyncio from "/lib/free/asyncio/queue_ns";
+import { MomentaryEvent, StatefulEvent } from "./lib/free/asyncio/events";
+import { AsyncQueue } from "./lib/free/asyncio/queue_ns";
+import { async_with, Lock } from "./lib/free/asyncio/lock";
+import { Semaphore } from "./lib/free/asyncio/semaphore";
+import { init_script } from "./lib/utils";
 
-async function test_registry(ns: NS) {
-    for (let i = 0; i < 10; i++) {
-        const event1 = new asyncio.Event(ns);
-        const event2 = new asyncio.Event(ns);
+async function test_lock(ns: NS, name: string, lock: Lock) {
+    await async_with(lock, async () => {
+        ns.tprint(`${name} has the lock`)
         await ns.asleep(1000)
-    }
+    })
 }
 
-async function test_event(ns: NS, event: asyncio.Event) {
+async function test_event(ns: NS, event: StatefulEvent) {
     for (let i = 0; i < 10; i++) {
         await event.wait()
         ns.tprint(`Iteration ${i}`)
     }
 }
 
-async function test_mevent(ns: NS, event: asyncio.MomentaryEvent) {
+async function test_mevent(ns: NS, event: MomentaryEvent) {
     for (let i = 0; i < 10; i++) {
         await event.wait()
         ns.tprint(`Iteration ${i}`)
     }
 }
 
-async function test_queue(ns: NS, queue: asyncio.AsyncQueue<string>, name: string) {
+async function test_queue(ns: NS, queue: AsyncQueue<string>, name: string) {
     let command = ''
     do {
         command = await queue.get()
@@ -31,7 +34,7 @@ async function test_queue(ns: NS, queue: asyncio.AsyncQueue<string>, name: strin
     } while (command != "done")
 }
 
-async function test_manage_task(ns: NS, name: string, queue: asyncio.AsyncQueue<NSJob>) {
+async function test_manage_task(ns: NS, name: string, queue: AsyncQueue<NSJob>) {
     let job = { fn_name: 'ns.tprint', args: [`Fake manager for ${name} running`] }
     queue.put(job)
     for (let i = 0; i < 10; i++) {
@@ -49,9 +52,18 @@ interface NSJob {
 }
 
 export async function main(ns: NS): Promise<void> {
-    const queue = new asyncio.AsyncQueue<NSJob>(ns)
-    let task1 = test_manage_task(ns, 'n00dles', queue)
-    let task2 = test_manage_task(ns, 'foodnstuff', queue)
+    init_script(ns)
+    // const lock = new ProcessLock()
+    // const lock = new NetworkLock(ns.getPortHandle(1))
+    const lock = new Semaphore(2, ns.getPortHandle(1))
+    let task1 = test_lock(ns, "task1", lock)
+    let task2 = test_lock(ns, "task2", lock)
+    const task3 = test_lock(ns, "task3", lock)
+    await Promise.all([task1, task2, task3])
+
+    const queue = new AsyncQueue<NSJob>(ns)
+    task1 = test_manage_task(ns, 'n00dles', queue)
+    task2 = test_manage_task(ns, 'foodnstuff', queue)
     while (!queue.empty()) {
         const job = await queue.get()
         await eval(job.fn_name)(...job.args)
@@ -59,7 +71,7 @@ export async function main(ns: NS): Promise<void> {
     }
     await Promise.all([task1, task2])
 
-    const event = new asyncio.Event(ns)
+    const event = new StatefulEvent(ns)
     task1 = test_event(ns, event)
     task2 = test_event(ns, event)
     ns.tprint(`Testing event...`)
@@ -72,7 +84,7 @@ export async function main(ns: NS): Promise<void> {
     event.set()
     await Promise.all([task1, task2])
 
-    const mevent = new asyncio.MomentaryEvent(ns)
+    const mevent = new MomentaryEvent(ns)
     task1 = test_mevent(ns, mevent)
     task2 = test_mevent(ns, mevent)
     ns.tprint(`Testing event...`)
@@ -83,7 +95,7 @@ export async function main(ns: NS): Promise<void> {
     }
     await Promise.all([task1, task2])
 
-    const msg_queue = new asyncio.AsyncQueue<string>(ns)
+    const msg_queue = new AsyncQueue<string>(ns)
     task1 = test_queue(ns, msg_queue, 'queue1')
     task2 = test_queue(ns, msg_queue, 'queue2')
     ns.tprint(`Testing queue...`)
