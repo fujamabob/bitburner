@@ -1,5 +1,5 @@
 import { IStyleSettings, ReactNode, UserInterfaceTheme } from "@ns";
-import { ns } from "./types";
+import { ns } from "../types";
 
 // Is it weird to wrap one-line functions that really just
 // lose their documentation?  Yes.  Am I organizing my brain?
@@ -149,6 +149,12 @@ export class GameUI {
         ns.ui.resetStyles()
     }
 
+    static set_theme(theme_data: string) {
+        const theme = ns.ui.getTheme()
+        Object.assign(theme, JSON.parse(theme_data))
+        ns.ui.setTheme(theme)
+    }
+
     static get theme(): UserInterfaceTheme {
         return ns.ui.getTheme()
     }
@@ -190,6 +196,48 @@ export class GameTerminal {
         ns.tprintRaw(node)
     }
 }
+
+export const DARK_PLUS_THEME = `{
+    "primarylight": "#E0E0BC",
+    "primary": "#CCCCAE",
+    "primarydark": "#B8B89C",
+    "successlight": "#00F000",
+    "success": "#00D200",
+    "successdark": "#00B400",
+    "errorlight": "#F00000",
+    "error": "#C80000",
+    "errordark": "#A00000",
+    "secondarylight": "#B4AEAE",
+    "secondary": "#969090",
+    "secondarydark": "#787272",
+    "warninglight": "#F0F000",
+    "warning": "#C8C800",
+    "warningdark": "#A0A000",
+    "infolight": "#69f",
+    "info": "#36c",
+    "infodark": "#039",
+    "welllight": "#444",
+    "well": "#222",
+    "white": "#fff",
+    "black": "#1E1E1E",
+    "hp": "#dd3434",
+    "money": "#ffd700",
+    "hack": "#adff2f",
+    "combat": "#faffdf",
+    "cha": "#a671d1",
+    "int": "#6495ed",
+    "rep": "#faffdf",
+    "disabled": "#66cfbc",
+    "backgroundprimary": "#1E1E1E",
+    "backgroundsecondary": "#252525",
+    "button": "#333",
+    "maplocation": "#ffffff",
+    "bnlvl0": "#ffff00",
+    "bnlvl1": "#ff0000",
+    "bnlvl2": "#48d1cc",
+    "bnlvl3": "#0000ff"
+  }`
+
 
 // export function App({ info }) {
 //     const header = React.createElement(Header, { info: info }),
