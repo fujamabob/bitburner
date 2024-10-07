@@ -9,9 +9,6 @@ Free NS functions
 =================
 
 Method 	Description
-alert(msg) 	Open up a message box.
-prompt(txt, options) 	Prompt the player with an input modal.
-toast(msg, variant, duration) 	Queue a toast (bottom-right notification).
 
 asleep(millis) 	Suspends the script for n milliseconds. Doesn't block with concurrent calls.
 sleep(millis) 	Suspends the script for n milliseconds.
@@ -36,12 +33,6 @@ isLogEnabled(fn) 	Checks the status of the logging for the given NS function.
 
 flags(schema) 	Parse command line flags.
 
-formatNumber(n, fractionalDigits, suffixStart, isInteger) 	Format a number.
-formatPercent(n, fractionalDigits, suffixStart) 	Format a number as a percentage.
-formatRam(n, fractionalDigits) 	Format a number as an amount of ram.
-tFormat(milliseconds, milliPrecision) 	Format time to a readable string.
-sprintf(format, args) 	Format a string.
-vsprintf(format, args) 	Format a string with an array of arguments.
 
 getFunctionRamCost(name) 	Get the ram cost of a netscript function.
 getScriptLogs(fn, host, args) 	Get all the logs of a script.
@@ -212,3 +203,24 @@ Question: Do the NetscriptPort methods cause collisions?
 - File stuff?  Yes.
 - Pipe stuff?  Yes.
 - NetscriptPort? No!
+
+UI Elements
+===========
+
+Input
+-----
+- prompt(txt, options) 	Prompt the player with an input modal.
+
+Output
+------
+- alert(msg) 	Open up a message box.
+- toast(msg, variant, duration) 	Queue a toast (bottom-right notification).
+
+String Formatting
+-----------------
+- formatNumber(n, fractionalDigits, suffixStart, isInteger) 	Format a number.
+- formatPercent(n, fractionalDigits, suffixStart) 	Format a number as a percentage.
+- formatRam(n, fractionalDigits) 	Format a number as an amount of ram.
+- tFormat(milliseconds, milliPrecision) 	Format time to a readable string.
+- sprintf(format, args) 	Format a string.
+- vsprintf(format, args) 	Format a string with an array of arguments.
