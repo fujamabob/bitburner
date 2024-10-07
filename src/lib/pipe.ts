@@ -47,7 +47,7 @@ export class NetworkPipe {
         return this.peek()
     }
 
-    write(data: string, overflow: false): boolean {
+    write(data: string, overflow = false): boolean {
         if (!overflow)
             return this.pipe.tryWrite(data)
         this.pipe.write(data)
