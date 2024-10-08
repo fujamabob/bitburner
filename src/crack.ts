@@ -105,10 +105,10 @@ function get_recommendation(): Recommendation {
 }
 
 class Server {
-    name: string
-    rpc: RPCClient
-    conf_data?: ServerInfo
-    pipe?: NetworkPipe
+    readonly name: string
+    private rpc: RPCClient
+    private conf_data?: ServerInfo
+    private pipe?: NetworkPipe
 
     private constructor(name: string, rpc: RPCClient) {
         this.name = name
