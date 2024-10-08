@@ -11,7 +11,7 @@ export interface Lock {
 export async function async_with(lock: Lock, func: (value: void) => Promise<void>): Promise<void> {
     await lock.acquire()
     try {
-        await func()
+        return await func()
     }
     finally {
         lock.release()
@@ -19,37 +19,37 @@ export async function async_with(lock: Lock, func: (value: void) => Promise<void
 }
 
 /** Mutual exclusion lock, process-wide. */
-// export class ProcessLock implements Lock {
-//     private locked: boolean
-//     private promise: Promise<void>
-//     private resolve: (value: void | PromiseLike<void>) => void
+export class ProcessLock implements Lock {
+    private locked: boolean
+    private promise: Promise<void>
+    private resolve: (value: void | PromiseLike<void>) => void
 
-//     constructor() {
-//         this.locked = false
-//         const { promise, resolve, } = Promise.withResolvers<void>()
-//         this.promise = promise
-//         this.resolve = resolve
-//     }
+    constructor() {
+        this.locked = false
+        const { promise, resolve, } = Promise.withResolvers<void>()
+        this.promise = promise
+        this.resolve = resolve
+    }
 
-//     async acquire(): Promise<void> {
-//         while (this.is_locked) {
-//             await this.promise
-//         }
-//         const { promise, resolve, } = Promise.withResolvers<void>()
-//         this.promise = promise
-//         this.resolve = resolve
-//         this.locked = true
-//     }
+    async acquire(): Promise<void> {
+        while (this.is_locked) {
+            await this.promise
+        }
+        const { promise, resolve, } = Promise.withResolvers<void>()
+        this.promise = promise
+        this.resolve = resolve
+        this.locked = true
+    }
 
-//     release() {
-//         this.locked = false
-//         this.resolve()
-//     }
+    release() {
+        this.locked = false
+        this.resolve()
+    }
 
-//     public get is_locked(): boolean {
-//         return this.locked;
-//     }
-// }
+    public get is_locked(): boolean {
+        return this.locked;
+    }
+}
 
 /** Mutual exclusion lock, network-wide. */
 export class NetworkLock implements Lock {

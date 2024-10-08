@@ -9,9 +9,13 @@ export class AsyncQueue<Type> {
     private done_event: StatefulEvent
     private next_read: MomentaryEvent
     private count: number
+    readonly port_num: number
 
-    constructor(ns: NS) {
-        this.queue = ns.getPortHandle(get_port_number(this))
+    constructor(ns: NS, port_number?: number) {
+        if (port_number === undefined)
+            port_number = get_port_number(this)
+        this.port_num = port_number
+        this.queue = ns.getPortHandle(port_number)
         this.done_event = new StatefulEvent(ns)
         this.count = 0
         this.next_read = new MomentaryEvent(ns)
