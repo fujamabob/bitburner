@@ -6,8 +6,7 @@ export async function main(ns: NS): Promise<void> {
     const ui = new GameUI(ns)
     ui.set_theme(DARK_PLUS_THEME)
     cache_server_info(ns)
-
-    ns.run("crack.js", { preventDuplicates: true }, "-c", "-m")
+    ns.spawn("start2.js", { spawnDelay: 0 })
 }
 
 function cache_server_info(ns: NS) {

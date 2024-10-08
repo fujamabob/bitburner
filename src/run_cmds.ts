@@ -8,7 +8,7 @@ export async function main(ns: NS): Promise<void> {
     try {
         server_conf = JSON.parse(ns.read('server_conf.txt'))
     }
-    catch (err) {
+    catch {
         return
     }
 
