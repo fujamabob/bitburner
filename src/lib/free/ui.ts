@@ -1,63 +1,62 @@
-import { IStyleSettings, ReactNode, UserInterfaceTheme } from "@ns";
-import { ns } from "../types";
+import { IStyleSettings, NS, UserInterfaceTheme } from "@ns";
 
 // Is it weird to wrap one-line functions that really just
 // lose their documentation?  Yes.  Am I organizing my brain?
 // Also yes.  Don't use 'em if you don't like 'em.
 
-export function format_number(n: number, fractionalDigits?: number, suffixStart?: number, isInteger?: boolean) {
+export function format_number(ns: NS, n: number, fractionalDigits?: number, suffixStart?: number, isInteger?: boolean) {
     if (Number.isNaN(n))
         return "NaN" // I know, I know.  Tracebacks, though.
     return ns.formatNumber(n, fractionalDigits, suffixStart, isInteger)
 }
 
-export function format_percent(n: number, fractionalDigits?: number, suffixStart?: number) {
+export function format_percent(ns: NS, n: number, fractionalDigits?: number, suffixStart?: number) {
     if (Number.isNaN(n))
         return "NaN" // I know, I know.  Tracebacks, though.
     return ns.formatPercent(n, fractionalDigits, suffixStart)
 }
 
-export function format_ram(n: number, fractionalDigits?: number) {
+export function format_ram(ns: NS, n: number, fractionalDigits?: number) {
     if (Number.isNaN(n))
         return "NaN" // I know, I know.  Tracebacks, though.
     return ns.formatRam(n, fractionalDigits)
 }
 
-export function format_time(milliseconds: number, milliPrecision?: boolean) {
+export function format_time(ns: NS, milliseconds: number, milliPrecision?: boolean) {
     if (Number.isNaN(milliseconds))
         return "NaN" // I know, I know.  Tracebacks, though.
     return ns.tFormat(milliseconds, milliPrecision)
 }
 
-export function alert(message: string) {
+export function alert(ns: NS, message: string) {
     ns.alert(message)
 }
 
-export async function prompt_yes_no(message: string): Promise<boolean> {
+export async function prompt_yes_no(ns: NS, message: string): Promise<boolean> {
     return ns.prompt(message, { type: "boolean" }) as Promise<boolean>
 }
 
-export async function prompt_input(message: string): Promise<string> {
+export async function prompt_input(ns: NS, message: string): Promise<string> {
     return ns.prompt(message, { type: "text" }) as Promise<string>
 }
 
-export async function prompt_choice(message: string, choices: string[]): Promise<string> {
+export async function prompt_choice(ns: NS, message: string, choices: string[]): Promise<string> {
     return ns.prompt(message, { type: "select", choices: choices }) as Promise<string>
 }
 
-export function toast_info(message: string, duration?: number,): void {
+export function toast_info(ns: NS, message: string, duration?: number,): void {
     ns.toast(message, "info", duration)
 }
 
-export function toast_warning(message: string, duration?: number): void {
+export function toast_warning(ns: NS, message: string, duration?: number): void {
     ns.toast(message, "warning", duration)
 }
 
-export function toast_error(message: string, duration?: number): void {
+export function toast_error(ns: NS, message: string, duration?: number): void {
     ns.toast(message, "error", duration)
 }
 
-export function toast_success(message: string, duration?: number): void {
+export function toast_success(ns: NS, message: string, duration?: number): void {
     ns.toast(message, "success", duration)
 }
 
@@ -69,132 +68,148 @@ export class Colors {
 }
 
 export class TailWindow {
+    ns: NS
     /*
 printRaw(node) 	Prints a ReactNode to the script logs.
     */
 
+    constructor(ns: NS) {
+        this.ns = ns
+    }
+
     print(...args: unknown[]) {
-        ns.print(...args)
+        this.ns.print(...args)
     }
 
     print_error(...args: unknown[]) {
-        ns.print("ERROR", ...args)
+        this.ns.print("ERROR", ...args)
     }
 
     print_warning(...args: unknown[]) {
-        ns.print("WARNING", ...args)
+        this.ns.print("WARNING", ...args)
     }
 
     print_info(...args: unknown[]) {
-        ns.print("INFO", ...args)
+        this.ns.print("INFO", ...args)
     }
 
     print_success(...args: unknown[]) {
-        ns.print("SUCCESS", ...args)
+        this.ns.print("SUCCESS", ...args)
     }
 
-    embed_react(node: ReactNode) {
-        ns.printRaw(node)
-    }
+    // embed_react(node: ReactNode) {
+    //     this.ns.printRaw(node)
+    // }
 
     show() {
-        ns.tail()
+        this.ns.tail()
     }
 
     hide() {
-        ns.closeTail()
+        this.ns.closeTail()
     }
 
     set_title(title: string) {
-        ns.setTitle(title)
+        this.ns.setTitle(title)
     }
 
     move(x: number, y: number) {
-        ns.moveTail(x, y)
+        this.ns.moveTail(x, y)
     }
 
     resize(width: number, height: number) {
-        ns.resizeTail(width, height)
+        this.ns.resizeTail(width, height)
     }
 
     clear() {
-        ns.clearLog()
+        this.ns.clearLog()
     }
 
     disable_ns_log(fn = "ALL") {
-        ns.disableLog(fn)
+        this.ns.disableLog(fn)
     }
 
     enable_ns_log(fn = "ALL") {
-        ns.enableLog(fn)
+        this.ns.enableLog(fn)
     }
 
     is_ns_log_enabled(fn = "ALL"): boolean {
-        return ns.isLogEnabled(fn)
+        return this.ns.isLogEnabled(fn)
     }
 
     public get max_size(): [number, number] {
-        return ns.ui.windowSize()
+        return this.ns.ui.windowSize()
     }
 }
 
 export class GameUI {
-    static get style(): IStyleSettings {
-        return ns.ui.getStyles()
+    ns: NS
+
+    constructor(ns: NS) {
+        this.ns = ns
     }
-    static set style(style: IStyleSettings) {
-        ns.ui.setStyles(style)
+    get style(): IStyleSettings {
+        return this.ns.ui.getStyles()
     }
-    static reset_style() {
-        ns.ui.resetStyles()
+    set style(style: IStyleSettings) {
+        this.ns.ui.setStyles(style)
+    }
+    reset_style() {
+        this.ns.ui.resetStyles()
     }
 
-    static set_theme(theme_data: string) {
-        const theme = ns.ui.getTheme()
+    set_theme(theme_data: string) {
+        const theme = this.ns.ui.getTheme()
         Object.assign(theme, JSON.parse(theme_data))
-        ns.ui.setTheme(theme)
+        this.ns.ui.setTheme(theme)
     }
 
-    static get theme(): UserInterfaceTheme {
-        return ns.ui.getTheme()
+    set theme(theme: UserInterfaceTheme) {
+        this.ns.ui.setTheme(theme)
     }
 
-    static set theme(theme: UserInterfaceTheme) {
-        ns.ui.setTheme(theme)
+    get theme(): UserInterfaceTheme {
+        return this.ns.ui.getTheme()
     }
 
-    static reset_theme() {
-        ns.ui.resetTheme()
+    reset_theme() {
+        this.ns.ui.resetTheme()
     }
 }
 
 export class GameTerminal {
+    ns: NS
+
+    constructor(ns: NS) {
+        this.ns = ns
+    }
+
     clear() {
-        ns.ui.clearTerminal()
+        this.ns.ui.clearTerminal()
     }
     print(...args: unknown[]) {
-        ns.tprint(...args)
+        this.ns.tprint(...args)
     }
 
     print_error(...args: unknown[]) {
-        ns.tprint("ERROR", ...args)
+        this.ns.tprint("ERROR", ...args)
     }
 
     print_warning(...args: unknown[]) {
-        ns.tprint("WARNING", ...args)
+        this.ns.tprint("WARNING", ...args)
     }
 
     print_info(...args: unknown[]) {
-        ns.tprint("INFO", ...args)
+        this.ns.tprint("INFO", ...args)
     }
 
     print_success(...args: unknown[]) {
-        ns.tprint("SUCCESS", ...args)
+        this.ns.tprint("SUCCESS", ...args)
     }
 
-    embed_react(node: ReactNode) {
-        ns.tprintRaw(node)
-    }
+    // embed_react(node: ReactNode) {
+    //     this.ns.tprintRaw(node)
+    // }
 }
 
 export const DARK_PLUS_THEME = `{

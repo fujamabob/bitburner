@@ -9,6 +9,7 @@ import { CrackConfig, read_config, write_config } from "./lib/free/config";
 import { get_server_info, ServerInfo } from "./lib/free/server_info";
 
 export async function main(ns: NS): Promise<void> {
+    ns.disableLog("ALL")
     const arg_schema = [
         ['c', false], // Regenerate config information
         ['r', false], // Print recommendation
@@ -16,9 +17,8 @@ export async function main(ns: NS): Promise<void> {
     ] as Schema
     const [flags, args] = await init_script(ns, arg_schema)
     if (flags.c) {
-        const targets = new Array<ServerInfo>()
+        let targets = new Array<ServerInfo>()
         for (const name of get_server_list(ns, "home")) {
-            ns.print(`Looking into server ${name}`)
             const info = get_server_info(ns, name)
             if (info == null) {
                 ns.print(`Could not get server info for ${name}`)
@@ -32,9 +32,14 @@ export async function main(ns: NS): Promise<void> {
             }
             targets.push(info)
         }
-        targets.sort((a, b) => (a.hackDifficulty as number) - (b.hackDifficulty as number))
+        targets = targets.sort((a, b) => {
+            if (a.requiredHackingSkill === undefined)
+                return 1
+            if (b.requiredHackingSkill === undefined)
+                return -1
+            return a.requiredHackingSkill - b.requiredHackingSkill
+        })
         write_config(ns, 'crack', { targets: targets })
-        return
     }
     const config_data = read_config(ns, 'crack') as CrackConfig
     if (config_data == null) {
@@ -47,18 +52,30 @@ export async function main(ns: NS): Promise<void> {
         ns.tprint(recommendation.describe())
     }
     else if (flags.m) {
-        ns.tprint('Beginning background server cracking...')
+        ns.toast('Beginning background server cracking...')
         ns.atExit(() => {
-            ns.tprint('Background cracking stopped.')
+            ns.toast('Background cracking stopped.')
         })
 
+        ns.print('Target servers:')
+        for (const server_info of config_data.targets.slice(0, 10)) {
+            ns.print(`  ${server_info.hostname}, ${server_info.requiredHackingSkill}`)
+            await ns.asleep(100)
+        }
+
         for (; ;) {
-            for (const server_info of config_data.targets) {
-                if (!server_info.hasAdminRights)
-                    if (root.hack_server(ns, server_info.hostname))
-                        ns.toast(`Successfully hacked ${server_info.hostname}`)
+            const server_info = config_data.targets.shift()
+            if (server_info === undefined)
+                break
+            ns.print(`Attempting to hack ${server_info.hostname}`)
+            if (root.hack_server(ns, server_info.hostname)) {
+                ns.toast(`Successfully hacked ${server_info.hostname}`)
             }
-            await ns.asleep(10000);
+            else {
+                config_data.targets.unshift(server_info)
+                write_config(ns, 'crack', config_data)
+                await ns.asleep(10000);
+            }
         }
     }
     else {

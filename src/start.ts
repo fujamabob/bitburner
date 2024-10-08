@@ -1,13 +1,13 @@
 import { NS } from "@ns";
 import { get_server_list } from "./lib/scan";
 import { DARK_PLUS_THEME, GameUI } from "./lib/free/ui";
-import { init_script } from "./lib/utils";
 
 export async function main(ns: NS): Promise<void> {
-    init_script(ns)
-    GameUI.set_theme(DARK_PLUS_THEME)
+    const ui = new GameUI(ns)
+    ui.set_theme(DARK_PLUS_THEME)
     cache_server_info(ns)
-    ns.spawn("manage.js", { preventDuplicates: true, spawnDelay: 100 })
+
+    ns.run("crack.js", { preventDuplicates: true }, "-c", "-m")
 }
 
 function cache_server_info(ns: NS) {

@@ -10,7 +10,7 @@ function next_port_number(): number {
     return Math.max(...used_ports.keys()) + 1
 }
 
-export function get_port_number<T extends WeakKey>(obj: T): number {
+export function get_port_number(obj: any): number {
     const next = next_port_number()
     used_ports.set(next, null)
     registry.register(obj, next)
