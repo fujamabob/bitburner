@@ -20,9 +20,9 @@ export class NetworkFile {
     touch(): boolean {
         if (this.exists)
             return true
-        var touch = new LocalFile('/tmp/touchfile.txt')
+        const touch = new LocalFile('/tmp/touchfile.txt')
         touch.write("")
-        var remote = touch.network_copy(this.hostname)
+        const remote = touch.network_copy(this.hostname)
         touch.delete()
         if (remote == null)
             return false
@@ -111,8 +111,8 @@ export class LocalFile extends NetworkFile {
 }
 
 export function list_files(hostname: HostName, substring?: string): Array<NetworkFile> {
-    var retval = new Array<NetworkFile>()
-    for (let filename of ns.ls(hostname, substring))
+    const retval = new Array<NetworkFile>()
+    for (const filename of ns.ls(hostname, substring))
         retval.push(new NetworkFile(filename, hostname))
     return retval
 }
@@ -120,7 +120,7 @@ export function list_files(hostname: HostName, substring?: string): Array<Networ
 /** I'm not even exporting this because the actual internet has no place here.
  * If you -need- to use it, though, this is how it might work.
 */
-async function dangerous_download(url: string, filename: FileName, hostname?: HostName): Promise<NetworkFile | null> {
+async function _dangerous_download(url: string, filename: FileName, hostname?: HostName): Promise<NetworkFile | null> {
     if (!await ns.wget(url, filename, hostname))
         return null
     if (typeof hostname == "undefined")

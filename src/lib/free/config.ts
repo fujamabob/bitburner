@@ -1,6 +1,11 @@
 /** Configuration file management. */
 
 import { NS } from "@ns"
+import { ServerInfo } from "./server_info"
+
+export interface CrackConfig {
+    targets: Array<ServerInfo>
+}
 
 export function get_config_path(name: string): string {
     return `/config/${name}.txt`

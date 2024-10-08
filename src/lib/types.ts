@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 
-export var ns: NS
+export let ns: NS
 
 export function set_global_ns(value: NS) {
     ns = value

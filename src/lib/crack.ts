@@ -1,7 +1,4 @@
 import { ns } from "/lib/types";
-import { is_locked } from "lib/lock";
-import { get_server_list } from "lib/scan";
-import * as root from "/lib/root";
 import { NetworkPipe } from "./pipe";
 
 class Server {
@@ -39,21 +36,5 @@ class Server {
                 ns.exec("run_cmds.js", this.name, { threads: (this.conf_data.maxRam - 2) / 2 })
             ns.spawn("manage.js", { spawnDelay: 10 })
         }
-    }
-}
-
-export async function manage(): Promise<void> {
-    const servers = new Map<string, Server>()
-    for (; ;) {
-        if (!is_locked(ns, "crack"))
-            for (const name of get_server_list(ns, "home", root.is_hackable)) {
-                if (!root.has_root(ns, name))
-                    if (root.hack(ns, name))
-                        ns.toast(`Successfully hacked ${name}`)
-                if (!servers.has(name))
-                    servers.set(name, new Server(name))
-                await servers.get(name)?.run()
-            }
-        await ns.asleep(10000);
     }
 }

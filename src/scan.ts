@@ -1,6 +1,5 @@
 import { NS } from "@ns";
 import { get_server_list, get_server_path, return_all } from "lib/scan";
-import { has_root } from "./lib/root";
 import { init_script, Schema } from "./lib/utils";
 
 export async function main(ns: NS): Promise<void> {
@@ -24,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
         return
     }
 
-    let where = has_root
+    let where = (ns: NS, name: string) => ns.hasRootAccess(name)
     if (flags.a)
         where = return_all
     ns.tprint(`where = ${where}`)

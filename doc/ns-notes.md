@@ -89,10 +89,8 @@ getTimeSinceLastAug() 	Returns the amount of time in milliseconds that have pass
 getTotalScriptExpGain() 	Get the exp gain of all scripts.
 getTotalScriptIncome() 	Get the income of all scripts.
 getWeakenTime(host) 	Get the execution time of a weaken() call.
-grow(host, opts) 	Spoof money in a server's bank account, increasing the amount available.
 growthAnalyze(host, multiplier, cores) 	Calculate the number of grow threads needed for a given multiplicative growth factor.
 growthAnalyzeSecurity(threads, hostname, cores) 	Calculate the security increase for a number of grow threads.
-hack(host, opts) 	Steal a server's money.
 hackAnalyze(host) 	Get the part of money stolen with a single thread.
 hackAnalyzeChance(host) 	Get the chance of successfully hacking a server.
 hackAnalyzeSecurity(threads, hostname) 	Get the security increase for a number of threads.
@@ -117,7 +115,6 @@ share() 	Share the server's ram with your factions.
 spawn(script, threadOrOptions, args) 	Terminate current script and start another in a defined number of milliseconds.
 sqlinject(host) 	Runs SQLInject.exe on a server.
 upgradePurchasedServer(hostname, ram) 	Upgrade a purchased server's RAM.
-weaken(host, opts) 	Reduce a server's security level.
 weakenAnalyze(threads, cores) 	Predict the effect of weaken.
 
 NS Attributes
@@ -224,3 +221,14 @@ String Formatting
 - tFormat(milliseconds, milliPrecision) 	Format time to a readable string.
 - sprintf(format, args) 	Format a string.
 - vsprintf(format, args) 	Format a string with an array of arguments.
+
+Time-intensive Functions (hacking)
+==================================
+
+These functions should -not- be centralized into a service because they take
+awhile to complete and clog up the NS object.  They're the reason the 1.6GB
+base cost is sometimes worthwhile.
+
+- grow(host, opts) 	Spoof money in a server's bank account, increasing the amount available.
+- hack(host, opts) 	Steal a server's money.
+- weaken(host, opts) 	Reduce a server's security level.
