@@ -107,8 +107,8 @@ function get_recommendation(): Recommendation {
 class Server {
     name: string
     rpc: RPCClient
-    conf_data: ServerInfo
-    pipe: NetworkPipe
+    conf_data?: ServerInfo
+    pipe?: NetworkPipe
 
     private constructor(name: string, rpc: RPCClient) {
         this.name = name
@@ -120,37 +120,51 @@ class Server {
         const conf_file = `/data/servers/${server.name}.txt`
         const conf_string = await rpc.call('read', conf_file) as string
         await rpc.call('tprint', name, conf_string)
-        server.conf_data = JSON.parse(conf_string)
+        server.conf_data = JSON.parse(conf_string) as ServerInfo
         server.pipe = new NetworkPipe(server.conf_data.port_num)
         return server
     }
 
     async serve() {
-        const sleep_time = await this.rpc.call('getHackTime', this.name)
-        if (await this.rpc.call('getServerSecurityLevel', this.name) > this.conf_data.minDifficulty + 5) {
-            this.pipe.clear()
-            this.pipe.write('weak')
+        if (this.conf_data === undefined || this.pipe === undefined)
+            return
+        if (this.conf_data.minDifficulty === undefined)
+            return
+        if (this.conf_data.moneyMax === undefined)
+            return
+        if (this.conf_data.requiredHackingSkill === undefined)
+            return
+
+        const sleep_time = await this.rpc.call('getHackTime', this.name) as number
+        for (; ;) {
+            const security_level = await this.rpc.call('getServerSecurityLevel', this.name) as number
+            const money_available = await this.rpc.call('getServerMoneyAvailable', this.name) as number
+            const hacking_level = await this.rpc.call('getHackingLevel') as number
+            if (security_level > this.conf_data.minDifficulty + 5) {
+                this.pipe.clear()
+                this.pipe.write('weak')
+            }
+            else if (money_available < this.conf_data.moneyMax * 0.8) {
+                this.pipe.clear()
+                this.pipe.write('grow')
+            }
+            else if (hacking_level < this.conf_data.requiredHackingSkill) {
+                this.pipe.clear()
+                this.pipe.write('grow')
+            }
+            else {
+                this.pipe.clear()
+                this.pipe.write('hack')
+            }
+            if (!await this.rpc.call('isRunning', "run_cmds.js", this.name)) {
+                await this.rpc.call('scp', "hack.js", this.name)
+                await this.rpc.call('scp', "run_cmds.js", this.name)
+                await this.rpc.call('scp', await this.rpc.call('ls', "home", "lib"), this.name)
+                await this.rpc.call('exec', "hack.js", this.name, { preventDuplicates: true, threads: 1 })
+                if (this.conf_data.maxRam > 2)
+                    await this.rpc.call('exec', "run_cmds.js", this.name, { threads: (this.conf_data.maxRam - 2) / 2 })
+            }
+            await delay(sleep_time)
         }
-        else if (await this.rpc.call('getServerMoneyAvailable', this.name) < this.conf_data.moneyMax * 0.8) {
-            this.pipe.clear()
-            this.pipe.write('grow')
-        }
-        else if (await this.rpc.call('getHackingLevel') < this.conf_data.requiredHackingSkill) {
-            this.pipe.clear()
-            this.pipe.write('grow')
-        }
-        else {
-            this.pipe.clear()
-            this.pipe.write('hack')
-        }
-        if (!await this.rpc.call('isRunning', "run_cmds.js", this.name)) {
-            await this.rpc.call('scp', "hack.js", this.name)
-            await this.rpc.call('scp', "run_cmds.js", this.name)
-            await this.rpc.call('scp', await this.rpc.call('ls', "home", "lib"), this.name)
-            await this.rpc.call('exec', "hack.js", this.name, { preventDuplicates: true, threads: 1 })
-            if (this.conf_data.maxRam > 2)
-                await this.rpc.call('exec', "run_cmds.js", this.name, { threads: (this.conf_data.maxRam - 2) / 2 })
-        }
-        await delay(sleep_time)
     }
 }

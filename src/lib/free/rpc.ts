@@ -1,6 +1,6 @@
 import { NetscriptPort, NS } from "@ns"
 import { get_port_number } from "./asyncio/port_registry"
-import { async_with, Lock, NetworkLock, ProcessLock } from "./asyncio/lock"
+import { async_with, Lock, ProcessLock } from "./asyncio/lock"
 
 export interface Job {
     fn_name: string
@@ -8,6 +8,8 @@ export interface Job {
     reply_port: number | null
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type RPCMap = Map<string, Function>
 
 export class RPCClient {
     private cmd_pipe: NetscriptPort
@@ -26,7 +28,7 @@ export class RPCClient {
         this.lock = new ProcessLock()
     }
 
-    async call(fn_name: string, ...args: string[]) {
+    async call(fn_name: string, ...args: unknown[]): Promise<unknown> {
         const data = await async_with(this.lock, async () => {
             this.cmd_pipe.write({ fn_name: fn_name, args: args, reply_port: this.reply_port_num })
             await this.reply_pipe.nextWrite()
@@ -35,7 +37,7 @@ export class RPCClient {
                 throw data
             return data
         })
-        this.ns.tprint(data)
+        return data
     }
 }
 
@@ -52,7 +54,7 @@ export class RPCServer {
         this.receive_pipe.clear()
     }
 
-    async run(fn_map: Map<string, unknown>) {
+    async run(fn_map: RPCMap) {
         for (; ;) {
             while (!this.receive_pipe.empty()) {
                 const data = this.receive_pipe.read()
