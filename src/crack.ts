@@ -1,12 +1,11 @@
 /** Opening up servers for our... personal use. */
 
 import { NS } from "@ns";
-import { delay, init_script, Schema } from "./lib/utils";
 import * as root from "./lib/root";
-import { NetworkPipe } from "./lib/pipe";
 import { RPCClient } from "./lib/free/rpc";
 import { ServerInfo } from "./lib/free/server_info";
 import { MrServerManager } from "./lib/free/notify";
+import { init_script, Schema } from "./lib/utils";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
@@ -94,66 +93,4 @@ function hack_and_notify(ns: NS, name: string, mr_manager: MrServerManager): boo
         return true
     }
     return false
-}
-
-class Server {
-    readonly name: string
-    private rpc: RPCClient
-    private conf_data?: ServerInfo
-    private pipe?: NetworkPipe
-
-    private constructor(name: string, rpc: RPCClient) {
-        this.name = name
-        this.rpc = rpc
-    }
-
-    static async create(name: string, rpc: RPCClient) {
-        const server = new Server(name, rpc)
-        server.conf_data = await rpc.call('get_server_info', name) as ServerInfo
-        server.pipe = new NetworkPipe(server.conf_data.port_num)
-        return server
-    }
-
-    async serve() {
-        if (this.conf_data === undefined || this.pipe === undefined)
-            return
-        if (this.conf_data.minDifficulty === undefined)
-            return
-        if (this.conf_data.moneyMax === undefined)
-            return
-        if (this.conf_data.requiredHackingSkill === undefined)
-            return
-
-        const sleep_time = await this.rpc.call('getHackTime', this.name) as number
-        for (; ;) {
-            const security_level = await this.rpc.call('getServerSecurityLevel', this.name) as number
-            const money_available = await this.rpc.call('getServerMoneyAvailable', this.name) as number
-            const hacking_level = await this.rpc.call('getHackingLevel') as number
-            if (security_level > this.conf_data.minDifficulty + 5) {
-                this.pipe.clear()
-                this.pipe.write('weak')
-            }
-            else if (money_available < this.conf_data.moneyMax * 0.8) {
-                this.pipe.clear()
-                this.pipe.write('grow')
-            }
-            else if (hacking_level < this.conf_data.requiredHackingSkill) {
-                this.pipe.clear()
-                this.pipe.write('grow')
-            }
-            else {
-                this.pipe.clear()
-                this.pipe.write('hack')
-            }
-            if (!await this.rpc.call('isRunning', "run_cmds.js", this.name)) {
-                await this.rpc.call('scp', "hack.js", this.name)
-                await this.rpc.call('scp', "run_cmds.js", this.name)
-                await this.rpc.call('scp', await this.rpc.call('ls', "home", "lib"), this.name)
-                await this.rpc.call('exec', "hack.js", this.name, { preventDuplicates: true, threads: 1 })
-                if (this.conf_data.maxRam > 2)
-                    await this.rpc.call('exec', "run_cmds.js", this.name, { threads: (this.conf_data.maxRam - 2) / 2 })
-            }
-            await delay(sleep_time)
-        }
-    }
 }

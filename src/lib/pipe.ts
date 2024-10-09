@@ -1,5 +1,4 @@
-import { NetscriptPort } from "@ns";
-import { ns } from "./types";
+import { NetscriptPort, NS } from "@ns";
 import { delay } from "./utils";
 
 /** Message-delimited byte-stream.
@@ -12,7 +11,7 @@ export class NetworkPipe {
     readonly pipe_id: number;
     private pipe: NetscriptPort;
 
-    constructor(pipe_id: number) {
+    constructor(ns: NS, pipe_id: number) {
         this.pipe_id = pipe_id
         this.pipe = ns.getPortHandle(pipe_id)
     }

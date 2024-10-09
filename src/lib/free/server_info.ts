@@ -13,21 +13,18 @@ function get_server_info_path(name: string): string {
 }
 
 export function get_server_info(ns: NS, name: string): ServerInfo {
-    const data_path = get_server_info_path(name)
-    const data = ns.read(data_path)
-    try {
-        return JSON.parse(data)
-    }
-    catch {
-        return cache_server_info(ns, name)
-    }
+    return cache_server_info(ns, name)
 }
 
+const SERVER_PORTS = new Map<string, number>()
+
 function cache_server_info(ns: NS, name: string): ServerInfo {
-    let i = 1
+    if (!SERVER_PORTS.has(name)) {
+        SERVER_PORTS.set(name, 10 + SERVER_PORTS.values.length)
+    }
     const server = ns.getServer(name)
     const server_data = Object.assign({}, server, {
-        port_num: i++,
+        port_num: SERVER_PORTS.get(name) as number,
         is_hack_target: server.moneyMax !== undefined && server.moneyMax > 0,
         is_personal: server.purchasedByPlayer,
         is_script_target: server.maxRam > 0,

@@ -35,6 +35,7 @@ export async function main(ns: NS): Promise<void> {
         'tprint': ns.tprint,
         'get_server_list': get_server_list,
         'get_server_info': get_server_info,
+        'killall': ns.killall,
     }))
 
     ns.print('Creating server...')
@@ -44,5 +45,5 @@ export async function main(ns: NS): Promise<void> {
         server.clear()
     }
     ns.print('Running... 1')
-    await server.run(fn_map)
+    await server.serve(fn_map)
 }

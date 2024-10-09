@@ -19,7 +19,7 @@ export async function main(ns: NS): Promise<void> {
         return
     }
 
-    const pipe = new NetworkPipe(server_conf.port_num)
+    const pipe = new NetworkPipe(ns, server_conf.port_num)
     let cmd = 'hack'
     for (; ;) {
         let new_cmd = pipe.peek()

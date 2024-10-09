@@ -52,7 +52,7 @@ export class RPCServer {
         this.receive_pipe.clear()
     }
 
-    async run(fn_map: RPCMap) {
+    async serve(fn_map: RPCMap) {
         for (; ;) {
             while (!this.receive_pipe.empty()) {
                 const data = this.receive_pipe.read()
