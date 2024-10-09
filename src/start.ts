@@ -7,10 +7,11 @@ export async function main(ns: NS): Promise<void> {
     // Requirement #1: Rule of Cool
     const ui = new GameUI(ns)
     ui.set_theme(DARK_PLUS_THEME)
+    ns.disableLog("asleep")
     // Goal #1: Spin up Mr. Manager
     const money_goal = ns.getPurchasedServerCost(16)
     var player = ns.getPlayer()
-    if (!ns.serverExists('mr_manager'))
+    if (!ns.serverExists('mr_manager')) {
         if (player.money < money_goal) {
             for (const name of get_server_list(ns)) {
                 if (root.hack_server(ns, name)) {
@@ -34,7 +35,8 @@ export async function main(ns: NS): Promise<void> {
             ns.alert(`City -> The Slums -> Shoplift`)
             while (player.money < money_goal)
                 await ns.asleep(1000)
-            ns.spawn("buy_manager.js")
         }
-    ns.spawn("manage.js")
+        ns.spawn("buy_manager.js", { spawnDelay: 0 })
+    }
+    ns.spawn("manage.js", { spawnDelay: 0 })
 }
