@@ -2,88 +2,77 @@
 
 import { NS } from "@ns";
 import { delay, init_script, Schema } from "./lib/utils";
-import { Recommendation } from "./lib/types";
 import * as root from "./lib/root";
-import { get_server_list } from "./lib/scan";
-import { CrackConfig, read_config, write_config } from "./lib/free/config";
-import { get_server_info, ServerInfo } from "./lib/free/server_info";
 import { NetworkPipe } from "./lib/pipe";
 import { RPCClient } from "./lib/free/rpc";
+import { ServerInfo } from "./lib/free/server_info";
+import { MrServerManager } from "./lib/free/notify";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
+    ns.disableLog('asleep')
     const rpc_client = new RPCClient(ns)
+    const mr_manager = new MrServerManager(ns)
+
     const arg_schema = [
-        ['c', false], // Regenerate config information
-        ['r', false], // Print recommendation
         ['m', false], // Manage servers in the background
     ] as Schema
     const [flags, args] = await init_script(ns, arg_schema)
 
-    if (flags.c) {
-        let targets = new Array<ServerInfo>()
-        for (const name of get_server_list(ns, "home")) {
-            const info = get_server_info(ns, name)
-            if (info == null) {
-                ns.print(`Could not get server info for ${name}`)
-                continue
-            }
-            if (info.hasAdminRights)
-                continue
-            if (info.hackDifficulty === undefined) {
-                ns.print(`Will not hack ${name}: undefined hack difficulty`)
-                continue
-            }
-            targets.push(info)
+    let targets = new Array<ServerInfo>()
+    for (const name of await rpc_client.call('get_server_list', "home") as string[]) {
+        const info = await rpc_client.call('get_server_info', name) as ServerInfo
+        if (info == null) {
+            ns.print(`Could not get server info for ${name}`)
+            continue
         }
-        targets = targets.sort((a, b) => {
+        if (info.hasAdminRights) {
+            mr_manager.new_server(info.hostname)
+            continue
+        }
+        if (info.hackDifficulty === undefined) {
+            ns.print(`Will not hack ${name}: undefined hack difficulty`)
+            continue
+        }
+        targets.push(info)
+    }
+    targets = targets.sort((a, b) => {
+        // Primary sort: Number of open ports required
+        // Rationale: allows us to run scripts before we can hack money
+        if (a.numOpenPortsRequired === undefined)
+            return 1
+        if (b.numOpenPortsRequired === undefined)
+            return -1
+        if (a.numOpenPortsRequired == b.numOpenPortsRequired) {
+            // Secondary sort: hacking skill
             if (a.requiredHackingSkill === undefined)
                 return 1
             if (b.requiredHackingSkill === undefined)
                 return -1
             return a.requiredHackingSkill - b.requiredHackingSkill
-        })
-        write_config(ns, 'crack', { targets: targets })
-        return
-    }
-    const config_data = read_config(ns, 'crack') as CrackConfig
-    if (config_data == null) {
-        ns.tprint('Cracking config data not found.  Please run config script')
-        return
-    }
-    const servers: Server[] = []
+        }
+        return a.numOpenPortsRequired - b.numOpenPortsRequired
+    })
 
-    if (flags.r) {
-        const recommendation = get_recommendation()
-        ns.tprint(recommendation.describe())
-    }
-    else if (flags.m) {
-        ns.ramOverride(4)
+    if (flags.m) {
+        ns.ramOverride(2)
         ns.toast('Beginning background server cracking...')
         ns.atExit(() => {
             ns.toast('Background cracking stopped.')
         })
 
         ns.print('Target servers:')
-        for (const server_info of config_data.targets.slice(0, 10)) {
+        for (const server_info of targets.slice(0, 10)) {
             ns.print(`  ${server_info.hostname}, ${server_info.requiredHackingSkill}`)
-            await ns.asleep(100)
         }
 
         for (; ;) {
-            const server_info = config_data.targets.shift()
+            const server_info = targets.shift()
             if (server_info === undefined)
                 break
             ns.print(`Attempting to hack ${server_info.hostname}`)
-            if (root.hack_server(ns, server_info.hostname)) {
-                ns.toast(`Successfully hacked ${server_info.hostname}`)
-                const server = await Server.create(server_info.hostname, rpc_client)
-                servers.push(server)
-                server.serve()
-            }
-            else {
-                config_data.targets.unshift(server_info)
-                write_config(ns, 'crack', config_data)
+            if (!hack_and_notify(ns, server_info.hostname, mr_manager)) {
+                targets.unshift(server_info)
                 await ns.asleep(10000);
             }
         }
@@ -94,14 +83,17 @@ export async function main(ns: NS): Promise<void> {
             return
         }
         const name = args[0].toString()
-        if (root.hack_server(ns, name))
-            ns.toast(`Successfully hacked ${name}`)
-
+        hack_and_notify(ns, name, mr_manager)
     }
 }
 
-function get_recommendation(): Recommendation {
-    return new Recommendation(true, 'because', 'doing something', 'wherever')
+function hack_and_notify(ns: NS, name: string, mr_manager: MrServerManager): boolean {
+    if (root.hack_server(ns, name)) {
+        ns.toast(`Successfully hacked ${name}`)
+        mr_manager.new_server(name)
+        return true
+    }
+    return false
 }
 
 class Server {
@@ -117,10 +109,7 @@ class Server {
 
     static async create(name: string, rpc: RPCClient) {
         const server = new Server(name, rpc)
-        const conf_file = `/data/servers/${server.name}.txt`
-        const conf_string = await rpc.call('read', conf_file) as string
-        await rpc.call('tprint', name, conf_string)
-        server.conf_data = JSON.parse(conf_string) as ServerInfo
+        server.conf_data = await rpc.call('get_server_info', name) as ServerInfo
         server.pipe = new NetworkPipe(server.conf_data.port_num)
         return server
     }

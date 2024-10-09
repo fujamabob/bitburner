@@ -2,6 +2,13 @@ import { NS } from "@ns";
 import { init_script } from "./lib/utils";
 import { NetworkPipe } from "./lib/pipe";
 
+
+// FIXME: Re-wire to use the ns_server instead of file I/O.
+// Also todo:
+//  - Hacked server automation
+//  - Hacknet automation
+//  - Purchased server automation
+//  - More goals: CSEC, etc.
 export async function main(ns: NS): Promise<void> {
     await init_script(ns)
     let server_conf
@@ -11,8 +18,6 @@ export async function main(ns: NS): Promise<void> {
     catch {
         return
     }
-
-
 
     const pipe = new NetworkPipe(server_conf.port_num)
     let cmd = 'hack'

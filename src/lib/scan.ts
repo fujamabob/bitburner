@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 
-interface FilterFunction {
+export interface FilterFunction {
     (ns: NS, server: string): boolean
 }
 

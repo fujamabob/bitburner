@@ -15,17 +15,15 @@ export class RPCClient {
     private cmd_pipe: NetscriptPort
     private reply_pipe: NetscriptPort
     private reply_port_num: number
-    // private lock: Lock
-    private ns: NS
 
     constructor(ns: NS, reply_port_num?: number, cmd_port_num = 2) {
-        this.ns = ns
+        // Unless we can get a port number from the NetscriptPort somehow, we need
+        // this info.
         this.cmd_pipe = ns.getPortHandle(cmd_port_num)
         if (reply_port_num === undefined)
             reply_port_num = get_port_number(this)
         this.reply_port_num = reply_port_num
         this.reply_pipe = ns.getPortHandle(reply_port_num)
-        // this.lock = new ProcessLock()
     }
 
     async call(fn_name: string, ...args: unknown[]): Promise<unknown> {
@@ -33,7 +31,7 @@ export class RPCClient {
         this.cmd_pipe.write({ fn_name: fn_name, args: args, reply_port: this.reply_port_num })
         await this.reply_pipe.nextWrite()
         const data = this.reply_pipe.read()
-        if (data == 'Error')
+        if (data === Error)
             throw data
         return data
         // })
@@ -65,7 +63,7 @@ export class RPCServer {
                 const func = fn_map.get(job.fn_name)
                 if (func === undefined) {
                     if (job.reply_port != null)
-                        this.ns.writePort(job.reply_port, 'Error')
+                        this.ns.writePort(job.reply_port, new Error(`No such function ${job.fn_name}`))
                     continue
                 }
                 const value = await func(...job.args)
