@@ -72,6 +72,7 @@ export async function main(ns: NS): Promise<void> {
             ns.print(`Attempting to hack ${server_info.hostname}`)
             if (!hack_and_notify(ns, server_info.hostname, mr_manager)) {
                 targets.unshift(server_info)
+                ns.print(`Next target: ${server_info.requiredHackingSkill} / ${server_info.numOpenPortsRequired}`)
                 await ns.asleep(10000);
             }
         }
