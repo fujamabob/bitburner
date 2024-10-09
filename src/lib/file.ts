@@ -123,7 +123,7 @@ export function list_files(hostname: HostName, substring?: string): Array<Networ
 async function _dangerous_download(url: string, filename: FileName, hostname?: HostName): Promise<NetworkFile | null> {
     if (!await ns.wget(url, filename, hostname))
         return null
-    if (typeof hostname == "undefined")
+    if (hostname === undefined)
         hostname = ns.getHostname()
     return new NetworkFile(filename, hostname)
 }
