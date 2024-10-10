@@ -1,13 +1,8 @@
 import { NS } from "@ns";
 
 export async function main(ns: NS): Promise<void> {
-    const hostname = ns.getHostname()
-    for (; ;) {
-        try {
-            await ns.hack(hostname)
-        }
-        catch {
-            await ns.asleep(10000)
-        }
+    const hostname = ns.args[0] as string
+    while (ns.getServerMoneyAvailable(hostname) > 0) {
+        await ns.hack(hostname)
     }
 }
