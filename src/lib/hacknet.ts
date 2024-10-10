@@ -24,7 +24,7 @@ upgradeRam(index, n) 	Upgrade the RAM of a hacknet node.
 
 import { NS } from "@ns";
 
-export async function manage(ns: NS, spend_factor = 0.1, profit_factor = 0.0): Promise<void> {
+export async function manage(ns: NS, spend_factor: number, profit_factor: number): Promise<void> {
     if (ns.hacknet.numNodes() == 0)
         if (ns.hacknet.purchaseNode() == -1)
             return

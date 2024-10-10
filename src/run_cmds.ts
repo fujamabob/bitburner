@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { init_script } from "./lib/utils";
-import { NetworkPipe } from "./lib/pipe";
+// import { NetworkPipe } from "./lib/pipe";
 import { RPCClient } from "./lib/free/rpc";
 import { ServerInfo } from "./lib/free/server_info";
 
@@ -40,7 +40,7 @@ export async function main(ns: NS): Promise<void> {
     }
 }
 
-async function divine_command(ns: NS, server_conf: ServerInfo, rpc: RPCClient): string {
+async function divine_command(ns: NS, server_conf: ServerInfo, rpc: RPCClient): Promise<string> {
     const max_mon = server_conf.moneyMax as number
     const mon = await rpc.call('getServerMoneyAvailable', server_conf.hostname) as number
     const min_sec = server_conf.minDifficulty as number
@@ -53,7 +53,9 @@ async function divine_command(ns: NS, server_conf: ServerInfo, rpc: RPCClient): 
         ns.print('Growing because money is too low')
         return 'grow'
     }
-    if (server_conf.requiredHackingSkill > await rpc.call('getHackingLevel')) {
+    if (server_conf.requiredHackingSkill === undefined)
+        return 'grow'
+    if (server_conf.requiredHackingSkill > (await rpc.call('getHackingLevel') as number)) {
         ns.print('Growing because hacking is too low')
         return 'grow'
     }

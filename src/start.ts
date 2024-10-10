@@ -10,7 +10,7 @@ export async function main(ns: NS): Promise<void> {
     ns.disableLog("asleep")
     // Goal #1: Spin up Mr. Manager
     const money_goal = ns.getPurchasedServerCost(16)
-    var player = ns.getPlayer()
+    let player = ns.getPlayer()
     if (!ns.serverExists('mr_manager')) {
         if (player.money < money_goal) {
             for (const name of get_server_list(ns)) {
@@ -23,7 +23,6 @@ export async function main(ns: NS): Promise<void> {
             ns.exec('hack.js', 'home', { threads: Math.floor((ns.getServerMaxRam('home') - ns.getServerUsedRam('home')) / 2) },)
             ns.alert(`Current goal: raise $${money_goal}`)
             ns.alert(`City -> Powerhouse Gym -> Train Dexterity`)
-            var player = ns.getPlayer()
             while (player.skills.dexterity < 20) {
                 await ns.asleep(1000)
                 player = ns.getPlayer()
