@@ -20,7 +20,7 @@ export async function main(ns: NS): Promise<void> {
                     ns.exec("hack.js", name, { threads: ns.getServerMaxRam(name) / 2 })
                 }
             }
-            ns.exec('hack.js', 'home', { threads: (ns.getServerMaxRam('home') - ns.getServerUsedRam('home')) / 2 },)
+            ns.exec('hack.js', 'home', { threads: Math.floor((ns.getServerMaxRam('home') - ns.getServerUsedRam('home')) / 2) },)
             ns.alert(`Current goal: raise $${money_goal}`)
             ns.alert(`City -> Powerhouse Gym -> Train Dexterity`)
             var player = ns.getPlayer()
