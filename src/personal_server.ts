@@ -66,6 +66,8 @@ export async function main(ns: NS): Promise<void> {
         if (flags.a) {
             const script = args[0].toString()
             for (const name of ns.getPurchasedServers()) {
+                if (name == 'mr_manager')
+                    continue
                 ns.scp(script, name, 'home')
                 ns.scp(ns.ls('home', '/lib'), name, 'home')
                 ns.exec(script, name, { threads: flags.n as number }, ...args.slice(1))

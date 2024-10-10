@@ -23,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
     // const pipe = new NetworkPipe(ns, server_conf.port_num)
     const rpc = new RPCClient(ns)
     for (; ;) {
-        const cmd = await divine_command(server_conf, rpc)
+        const cmd = await divine_command(ns, server_conf, rpc)
         // let cmd = pipe.peek()
         // if (cmd == null) {
         //     cmd = await divine_command(server_conf, rpc)
@@ -40,16 +40,22 @@ export async function main(ns: NS): Promise<void> {
     }
 }
 
-async function divine_command(server_conf: ServerInfo, rpc: RPCClient): string {
+async function divine_command(ns: NS, server_conf: ServerInfo, rpc: RPCClient): string {
     const max_mon = server_conf.moneyMax as number
     const mon = await rpc.call('getServerMoneyAvailable', server_conf.hostname) as number
     const min_sec = server_conf.minDifficulty as number
     const sec = await rpc.call('getServerSecurityLevel', server_conf.hostname) as number
-    if (sec > min_sec + 5)
+    if (sec > (min_sec + 5)) {
+        ns.print('Weakening because security is too high')
         return 'weak'
-    if (mon < max_mon * 0.8)
+    }
+    if (mon < (max_mon * 0.8)) {
+        ns.print('Growing because money is too low')
         return 'grow'
-    if (server_conf.requiredHackingSkill > await rpc.call('getHackingLevel'))
+    }
+    if (server_conf.requiredHackingSkill > await rpc.call('getHackingLevel')) {
+        ns.print('Growing because hacking is too low')
         return 'grow'
+    }
     return 'hack'
 }
