@@ -8,7 +8,10 @@ export async function main(ns: NS): Promise<void> {
         ['b', false], // Buy a server
         ['r', false], // Rename a server
         ['d', false], // Delete a server
-        ['a', false], // Buy / upgrade all
+        ['a', false], // Buy / upgrade / execute all
+        ['e', false], // Execute a script
+        ['n', 1],     // Number of threads
+        ['k', false], // Kill scripts on a server
     ] as Schema
     const [flags, args] = await init_script(ns, arg_schema)
 
@@ -57,6 +60,36 @@ export async function main(ns: NS): Promise<void> {
             const ram = parseInt(args[1].toString())
             ns.upgradePurchasedServer(name, ram)
             print_server(ns, name)
+        }
+    }
+    else if (flags.e) {
+        if (flags.a) {
+            const script = args[0].toString()
+            for (const name of ns.getPurchasedServers()) {
+                ns.scp(script, name, 'home')
+                ns.scp(ns.ls('home', '/lib'), name, 'home')
+                ns.exec(script, name, { threads: flags.n as number }, ...args.slice(1))
+            }
+        }
+        else {
+            const name = args[0].toString()
+            const script = args[1].toString()
+            ns.scp(script, name, 'home')
+            ns.scp(ns.ls('home', '/lib'), name, 'home')
+            ns.exec(script, name, { threads: flags.n as number }, ...args.slice(2))
+        }
+    }
+    else if (flags.k) {
+        if (flags.a) {
+            for (const name of ns.getPurchasedServers()) {
+                if (name == 'mr_manager')
+                    continue
+                ns.killall(name)
+            }
+        }
+        else {
+            const name = args[0].toString()
+            ns.killall(name)
         }
     }
     else {
