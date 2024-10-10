@@ -6,10 +6,10 @@ export async function main(ns: NS): Promise<void> {
     const arg_schema = [
         ['p', false], // Print path
         ['a', false], // Print everything
+        ['m', false], // Monitor target
     ] as Schema
     const [flags, args] = await init_script(ns, arg_schema)
 
-    const server = args[0] as string | undefined
     if (flags.p) {
         let path = 'home'
         for (const name of get_server_path(ns, args[0].toString())) {
@@ -18,8 +18,20 @@ export async function main(ns: NS): Promise<void> {
         ns.tprint(path)
         return
     }
-    if (typeof server != "undefined") {
-        print_server_info(ns, server)
+    if (args[0] !== undefined) {
+        const servers = new Array<string>(...args as string[])
+        if (flags.m) {
+            ns.disableLog('ALL')
+            ns.tail()
+            for (; ;) {
+                ns.clearLog()
+                for (const server of servers)
+                    print_server_info(ns, server, ns.print)
+                await ns.asleep(1000)
+            }
+        }
+        for (const server of servers)
+            print_server_info(ns, server)
         return
     }
 
@@ -32,16 +44,16 @@ export async function main(ns: NS): Promise<void> {
     }
 }
 
-function print_server_info(ns: NS, server: string) {
+function print_server_info(ns: NS, server: string, printer = ns.tprint) {
     if (ns.getServerMaxMoney(server) == 0)
         return
     if (ns.getServerMaxRam(server) == 0)
         return
-    ns.tprint(`${server} info:`)
+    printer(`${server} info:`)
     if (!ns.hasRootAccess(server)) {
-        ns.tprint(`  Hacking level required: ${ns.getServerRequiredHackingLevel(server)}`)
+        printer(`  Hacking level required: ${ns.getServerRequiredHackingLevel(server)}`)
     }
-    ns.tprint(`  Security: ${ns.formatNumber(ns.getServerSecurityLevel(server))} of ${ns.getServerMinSecurityLevel(server)}`)
-    ns.tprint(`  Money: $${ns.formatNumber(ns.getServerMoneyAvailable(server))} of $${ns.formatNumber(ns.getServerMaxMoney(server))}`)
-    ns.tprint(`  RAM: ${ns.getServerUsedRam(server)}GB used of ${ns.getServerMaxRam(server)}GB`)
+    printer(`  Security: ${ns.formatNumber(ns.getServerSecurityLevel(server))} of ${ns.getServerMinSecurityLevel(server)}`)
+    printer(`  Money: $${ns.formatNumber(ns.getServerMoneyAvailable(server))} of $${ns.formatNumber(ns.getServerMaxMoney(server))}`)
+    printer(`  RAM: ${ns.getServerUsedRam(server)}GB used of ${ns.getServerMaxRam(server)}GB`)
 }
