@@ -3,15 +3,18 @@ import { init_script, Schema } from "./lib/utils";
 
 export async function main(ns: NS): Promise<void> {
     const arg_schema = [
-        ['l', false], // List servers
-        ['u', false], // Upgrade servers
-        ['b', false], // Buy a server
-        ['r', false], // Rename a server
-        ['d', false], // Delete a server
-        ['a', false], // Buy / upgrade / execute all
-        ['e', false], // Execute a script
-        ['n', 1],     // Number of threads
-        ['k', false], // Kill scripts on a server
+        ['l', false],  // List servers
+        ['u', false],  // Upgrade servers
+        ['b', false],  // Buy a server
+        ['r', false],  // Rename a server
+        ['d', false],  // Delete a server
+        ['a', false],  // Buy / upgrade / execute all
+        ['e', false],  // Execute a script
+        ['n', 1],      // Number of threads
+        ['o', 0],      // Time offset between execution, ms
+        ['k', false],  // Kill scripts on a server
+        ['c', false],  // Copy files
+        ['f', 'home'], // Copy source
     ] as Schema
     const [flags, args] = await init_script(ns, arg_schema)
 
@@ -71,6 +74,8 @@ export async function main(ns: NS): Promise<void> {
                 ns.scp(script, name, 'home')
                 ns.scp(ns.ls('home', '/lib'), name, 'home')
                 ns.exec(script, name, { threads: flags.n as number }, ...args.slice(1))
+                if (flags.o)
+                    await ns.sleep(flags.o as number)
             }
         }
         else {
@@ -79,6 +84,22 @@ export async function main(ns: NS): Promise<void> {
             ns.scp(script, name, 'home')
             ns.scp(ns.ls('home', '/lib'), name, 'home')
             ns.exec(script, name, { threads: flags.n as number }, ...args.slice(2))
+        }
+    }
+    else if (flags.c) {
+        const from = flags.f as string
+        if (flags.a) {
+            const files = new Array<string>(...args as string[])
+            for (const name of ns.getPurchasedServers()) {
+                if (name == 'mr_manager')
+                    continue
+                ns.scp(files, name, from)
+            }
+        }
+        else {
+            const name = args[0].toString()
+            const files = new Array<string>(...args.slice(1) as string[])
+            ns.scp(files, name, from)
         }
     }
     else if (flags.k) {
