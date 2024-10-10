@@ -6,7 +6,7 @@ export async function main(ns: NS): Promise<void> {
     const arg_schema = [
         ['m', false], // Manage in the background
         ['s', 0.1],   // Spend factor
-        ['p', 0.0],   // Profit factor
+        ['p', -1],    // Profit factor
     ] as Schema
     const [flags,] = await init_script(ns, arg_schema)
 
