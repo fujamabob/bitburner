@@ -55,10 +55,10 @@ async function incremental_cleanup(ns: NS, hostname: string, rpc: RPCClient, tar
     const hack = new_info.requiredHackingSkill as number
     let cmd = 'hack'
     if (hack > (await rpc.call('getHackingLevel') as number)) {
-        ns.print('Growing because hacking is too low')
         if (sec > min_sec)
             cmd = 'weak'
         cmd = 'grow'
+        ns.print(`Hacking is too low; will run ${cmd} instead`)
     }
     // Note: we want to be strictly better than the n-2 measurement.
     //       Testing >= the n-1 measurement means we just grow until

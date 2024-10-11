@@ -30,9 +30,9 @@ export async function manage(ns: NS, spend_factor: number, profit_factor: number
             return
 
     for (; ;) {
+        await ns.asleep(1000);
         ns.clearLog()
         print_stats(ns, ns.print)
-        await ns.asleep(1000);
 
         if (ns.fileExists("/lock/hacknet.txt")) {
             await ns.asleep(1000);
@@ -44,25 +44,31 @@ export async function manage(ns: NS, spend_factor: number, profit_factor: number
             continue
 
         for (let i = 0; i < ns.hacknet.numNodes(); i++) {
-            const budget = ns.getPlayer().money * spend_factor;
+            let budget = ns.getPlayer().money * spend_factor;
 
             while (ns.hacknet.upgradeRam(i))
                 ns.print("Upgraded RAM on machine ", i);
 
-            if (ns.hacknet.getCoreUpgradeCost(i) < budget) {
-                if (ns.hacknet.upgradeCore(i))
+            let cost = ns.hacknet.getCoreUpgradeCost(i)
+            if (cost < budget) {
+                if (ns.hacknet.upgradeCore(i)) {
                     ns.print("Upgraded core on machine ", i);
+                    budget -= cost
+                }
             }
 
-            if (ns.hacknet.getLevelUpgradeCost(i, 10) < budget) {
-                if (ns.hacknet.upgradeLevel(i, 10))
+            cost = ns.hacknet.getLevelUpgradeCost(i, 10)
+            if (cost < budget) {
+                if (ns.hacknet.upgradeLevel(i, 10)) {
                     ns.print("Upgraded level on machine ", i);
+                    budget -= cost
+                }
             }
         }
 
         const last_node = ns.hacknet.getNodeStats(ns.hacknet.numNodes() - 1);
         if (last_node.ram == 64) {
-            if (ns.hacknet.getPurchaseNodeCost() < (ns.getPlayer().money * 0.1)) {
+            if (ns.hacknet.getPurchaseNodeCost() < (ns.getPlayer().money * spend_factor)) {
                 ns.hacknet.purchaseNode();
             }
         }
