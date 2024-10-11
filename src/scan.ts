@@ -45,15 +45,15 @@ export async function main(ns: NS): Promise<void> {
 }
 
 function print_server_info(ns: NS, server: string, printer = ns.tprint) {
-    if (ns.getServerMaxMoney(server) == 0)
+    const info = ns.getServer(server)
+    if (info.moneyMax === undefined || info.moneyMax == 0)
         return
-    if (ns.getServerMaxRam(server) == 0)
+    if (info.maxRam == 0)
         return
     printer(`${server} info:`)
-    if (!ns.hasRootAccess(server)) {
-        printer(`  Hacking level required: ${ns.getServerRequiredHackingLevel(server)}`)
-    }
-    printer(`  Security: ${ns.formatNumber(ns.getServerSecurityLevel(server))} of ${ns.getServerMinSecurityLevel(server)}`)
-    printer(`  Money: $${ns.formatNumber(ns.getServerMoneyAvailable(server))} of $${ns.formatNumber(ns.getServerMaxMoney(server))}`)
-    printer(`  RAM: ${ns.getServerUsedRam(server)}GB used of ${ns.getServerMaxRam(server)}GB`)
+    printer(`  Hacking level required: ${info.requiredHackingSkill}`)
+    printer(`  Security: ${ns.formatNumber(info.hackDifficulty ?? -1)} of ${info.minDifficulty}`)
+    printer(`  Money: $${ns.formatNumber(info.moneyAvailable ?? 0)} of $${ns.formatNumber(info.moneyMax ?? 0)}`)
+    printer(`  RAM: ${info.ramUsed}GB used of ${info.maxRam}GB`)
+    printer(`  Grow rate: ${info.serverGrowth}, max $/s = ${ns.formatNumber((info.moneyMax ?? 0) / ns.getHackTime(server))}`)
 }
