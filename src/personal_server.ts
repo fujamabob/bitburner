@@ -130,8 +130,10 @@ export async function main(ns: NS): Promise<void> {
             for (const name of ns.getPurchasedServers()) {
                 if (name == 'mr_manager')
                     continue
-                for (const target of servers)
+                for (const target of servers) {
                     run_script(ns, 'run_cmds.js', name, Math.floor(ns.getServerMaxRam(name) / servers.length), [target])
+                    await ns.asleep(10)
+                }
             }
         }
         else {
