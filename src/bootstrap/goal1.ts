@@ -1,11 +1,12 @@
 import { NS } from "@ns";
 import { get_server_list } from "../lib/scan";
 import * as root from "../lib/root";
+import { request_money_to, request_skill_to } from "./utils";
 
 export async function main(ns: NS): Promise<void> {
     // Goal #1: Spin up Mr. Manager
     const money_goal = ns.getPurchasedServerCost(16)
-    let player = ns.getPlayer()
+    const player = ns.getPlayer()
     if (!ns.serverExists('mr_manager')) {
         if (player.money < money_goal) {
             for (const name of get_server_list(ns)) {
@@ -16,22 +17,10 @@ export async function main(ns: NS): Promise<void> {
                 }
             }
             ns.exec('/bootstrap/hack.js', 'home', { threads: Math.floor((ns.getServerMaxRam('home') - ns.getServerUsedRam('home')) / 2) }, 'n00dles')
-            ns.alert(`Current goal: raise $${money_goal}`)
-            ns.alert(`City -> Powerhouse Gym -> Train Dexterity`)
-            while (player.skills.dexterity < 20) {
-                await ns.asleep(1000)
-                player = ns.getPlayer()
-            }
-            ns.alert(`City -> Powerhouse Gym -> Train Agility`)
-            while (player.skills.agility < 20) {
-                await ns.asleep(1000)
-                player = ns.getPlayer()
-            }
-            ns.alert(`City -> The Slums -> Shoplift`)
-            while (player.money < money_goal) {
-                await ns.asleep(1000)
-                player = ns.getPlayer()
-            }
+            ns.alert(`Current goal: raise $${money_goal} to spin up Mr. Manager.`)
+            await request_skill_to(ns, 'dexterity', 20)
+            await request_skill_to(ns, 'agility', 20)
+            await request_money_to(ns, 'City -> The Slums -> Shoplift', money_goal)
             ns.killall('home', true)
         }
     }

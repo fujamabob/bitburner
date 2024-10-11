@@ -1,10 +1,3 @@
-import { NS } from "@ns";
-
-export let ns: NS
-
-export function set_global_ns(value: NS) {
-    ns = value
-}
 
 export class Recommendation {
     recommend: boolean
