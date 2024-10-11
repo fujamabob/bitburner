@@ -14,7 +14,7 @@ function ensure_running(ns: NS, script_name: string, hostname: string, ...args: 
     if (!ns.isRunning(script_name, hostname, ...args)) {
         ns.scp(ns.ls("home", "/lib"), hostname, 'home')
         ns.scp(script_name, hostname, 'home')
-        let pid = ns.exec(script_name, hostname, {}, ...args)
+        const pid = ns.exec(script_name, hostname, {}, ...args)
         if (pid == 0)
             return false
     }
