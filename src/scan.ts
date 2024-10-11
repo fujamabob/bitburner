@@ -38,10 +38,11 @@ export async function main(ns: NS): Promise<void> {
     let where = (ns: NS, name: string) => ns.hasRootAccess(name)
     if (flags.a)
         where = return_all
-    ns.tprint(`where = ${where}`)
-    for (const name of get_server_list(ns, "home", where)) {
+    const servers = new Array<string>(...get_server_list(ns, "home", where))
+    for (const name of servers) {
         print_server_info(ns, name)
     }
+    ns.tprint(`Number of servers: ${servers.length}`)
 }
 
 function print_server_info(ns: NS, server: string, printer = ns.tprint) {

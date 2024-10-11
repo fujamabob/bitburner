@@ -1,5 +1,6 @@
-import { NS } from "@ns";
+import { NS, ScriptArg } from "@ns";
 import { init_script, Schema } from "./lib/utils";
+import { get_server_list } from "./lib/scan";
 
 export async function main(ns: NS): Promise<void> {
     const arg_schema = [
@@ -15,6 +16,7 @@ export async function main(ns: NS): Promise<void> {
         ['k', false],  // Kill scripts on a server
         ['c', false],  // Copy files
         ['f', 'home'], // Copy source
+        ['h', false],  // Hack everything
     ] as Schema
     const [flags, args] = await init_script(ns, arg_schema)
 
@@ -115,6 +117,29 @@ export async function main(ns: NS): Promise<void> {
             ns.killall(name)
         }
     }
+    else if (flags.h) {
+        const should_hack = (ns: NS, name: string) => {
+            if (!ns.hasRootAccess(name))
+                return false
+            if (ns.getServerMaxMoney(name) <= 0)
+                return false
+            return true
+        }
+        const servers = new Array<string>(...get_server_list(ns, 'home', should_hack))
+        if (flags.a) {
+            for (const name of ns.getPurchasedServers()) {
+                if (name == 'mr_manager')
+                    continue
+                for (const target of servers)
+                    run_script(ns, 'run_cmds.js', name, Math.floor(ns.getServerMaxRam(name) / servers.length), [target])
+            }
+        }
+        else {
+            const name = args[0] as string
+            for (const target of servers)
+                run_script(ns, 'run_cmds.js', name, Math.floor(ns.getServerMaxRam(name) / servers.length), [target])
+        }
+    }
     else {
         ns.tprint('Purchased Server Information:')
         ns.tprint(`  Limit  : ${ns.getPurchasedServerLimit()}`)
@@ -127,4 +152,11 @@ export async function main(ns: NS): Promise<void> {
 
 function print_server(ns: NS, name: string) {
     ns.tprint(`${name}: ${ns.getServerMaxRam(name)}GB`)
+}
+
+function run_script(ns: NS, script: string, name: string, threads: number, args: ScriptArg[]) {
+    ns.scp(script, name, 'home')
+    ns.scp(ns.ls('home', '/lib'), name, 'home')
+    ns.exec(script, name, { threads: threads }, ...args)
+
 }
