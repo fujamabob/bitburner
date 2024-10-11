@@ -60,12 +60,15 @@ async function incremental_cleanup(ns: NS, hostname: string, rpc: RPCClient, tar
             cmd = 'weak'
         cmd = 'grow'
     }
-    if (sec >= targets.best_security && sec > min_sec + 5) {
+    // Note: we want to be strictly better than the n-2 measurement.
+    //       Testing >= the n-1 measurement means we just grow until
+    //       in the good range.
+    if (sec > targets.best_security && sec > min_sec + 5) {
         // Security has increased and is outside of the "good" range
         ns.print(`Weakening: ${ns.formatNumber(sec)} > ${ns.formatNumber(targets.best_security)} of ${min_sec}`)
         cmd = 'weak'
     }
-    else if (mon <= targets.best_money && mon < max_mon * 0.8) {
+    else if (mon < targets.best_money && mon < max_mon * 0.8) {
         // Money has decreased and is outside of the "good" range
         ns.print(`Growing: ${ns.formatNumber(mon)} < ${ns.formatNumber(targets.best_money)} of ${ns.formatNumber(max_mon)}`)
         cmd = 'grow'
