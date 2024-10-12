@@ -57,7 +57,8 @@ async function incremental_cleanup(ns: NS, hostname: string, rpc: RPCClient, tar
     if (hack > (await rpc.call('getHackingLevel') as number)) {
         if (sec > min_sec)
             cmd = 'weak'
-        cmd = 'grow'
+        else
+            cmd = 'grow'
         ns.print(`Hacking is too low; will run ${cmd} instead`)
     }
     // Note: we want to be strictly better than the n-2 measurement.
