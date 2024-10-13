@@ -8,9 +8,9 @@ export interface ServerInfo extends Server {
 }
 
 
-function get_server_info_path(name: string): string {
-    return `/data/servers/${name}.txt`
-}
+// function get_server_info_path(name: string): string {
+//     return `/data/servers/${name}.txt`
+// }
 
 export function get_server_info(ns: NS, name: string): ServerInfo {
     return cache_server_info(ns, name)
