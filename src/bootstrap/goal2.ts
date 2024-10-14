@@ -17,5 +17,5 @@ export async function main(ns: NS): Promise<void> {
             await ns.asleep(1000)
         }
     }
-    ns.spawn('/bootstrap/buy_hacknet.js')
+    ns.spawn('/bootstrap/buy_hacknet.js', { spawnDelay: 0 })
 }
