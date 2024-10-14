@@ -17,14 +17,14 @@ export async function manage(ns: NS, base_name: string, spend_factor = 0.1): Pro
     }
 
     const max_ram = ns.getPurchasedServerMaxRam()
-    ram *= 2
+    ram = ns.getServerMaxRam(base_name)
     while (ram <= max_ram) {
         ns.print(`Ram = ${ram}...`)
         for (const server of ns.getPurchasedServers()) {
-            if (ns.getServerMaxRam(server) >= ram)
-                continue
             ns.print(`Would like to upgrade ${server} to ${ram}GB`)
             for (; ;) {
+                if (ns.getServerMaxRam(server) >= ram)
+                    break
                 const budget = ns.getPlayer().money * spend_factor
                 if (!is_locked(ns, "owned_servers")) {
                     if (ns.getPurchasedServerUpgradeCost(server, ram) <= budget) {
@@ -39,6 +39,11 @@ export async function manage(ns: NS, base_name: string, spend_factor = 0.1): Pro
             }
         }
         ram *= 2
+        if (ram >= 64) {
+            ns.run('personal_server.js', { threads: 1 }, '-a', '-k')
+            await ns.asleep(1000)
+            ns.run('personal_server.js', { threads: 1 }, '-a', '-h')
+        }
     }
 }
 
