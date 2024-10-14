@@ -2,7 +2,7 @@ import { NS } from "@ns";
 import { is_locked } from "./lock";
 
 export async function manage(ns: NS, base_name: string, spend_factor = 0.1): Promise<void> {
-    let ram = 4;
+    let ram = 2;
 
     while (ns.getPurchasedServers().length < 25) {
         const budget = ns.getPlayer().money * spend_factor
@@ -13,7 +13,7 @@ export async function manage(ns: NS, base_name: string, spend_factor = 0.1): Pro
                 ns.toast(`Acquired a new server: ${name}`);
             }
         }
-        await ns.asleep(10000);
+        await ns.asleep(1000);
     }
 
     const max_ram = ns.getPurchasedServerMaxRam()
@@ -43,6 +43,9 @@ export async function manage(ns: NS, base_name: string, spend_factor = 0.1): Pro
             ns.run('personal_server.js', { threads: 1 }, '-a', '-k')
             await ns.asleep(1000)
             ns.run('personal_server.js', { threads: 1 }, '-a', '-h')
+        }
+        else {
+            ns.run('personal_server.js', { threads: 1 }, '-a', '-e', 'run_cmds.js', 'n00dles', '-n', Math.ceil(ram / 4))
         }
     }
 }
