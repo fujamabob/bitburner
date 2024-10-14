@@ -1,4 +1,3 @@
-import { ns } from "./types";
 
 /** A file somewhere on the network */
 type FileName = string;
