@@ -14,6 +14,7 @@ export async function main(ns: NS) {
         ['vig', false],   // Vigilante
         ['war', false],   // Warfare
         ['a', false],     // Ascend
+        ['i', false],     // Buy items
     ] as Schema
     const [flags,] = await init_script(ns, arg_schema)
 
@@ -49,6 +50,13 @@ export async function main(ns: NS) {
     else if (flags.a) {
         for (const name of ns.gang.getMemberNames()) {
             ns.gang.ascendMember(name)
+        }
+    }
+    else if (flags.i) {
+        for (const item of ns.gang.getEquipmentNames()) {
+            for (const name of ns.gang.getMemberNames()) {
+                ns.gang.purchaseEquipment(name, item)
+            }
         }
     }
     const other = ns.gang.getOtherGangInformation()

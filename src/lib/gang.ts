@@ -13,8 +13,8 @@ export async function manage(ns: NS) {
 
     const wanted_threshold = 0.99
     let index = 0
-    const tasks = ["Train Combat", "Train Hacking", "Train Charisma", "Territory Warfare"]//, "Terrorism", "Ascend"]
-    // const tasks = ["Train Combat", "Train Hacking", "Train Charisma", "Traffick Illegal Arms", "Ascend"]
+    // const tasks = ["Train Combat", "Train Hacking", "Train Charisma", "Territory Warfare"]//, "Terrorism", "Ascend"]
+    const tasks = ["Train Combat", "Train Hacking", "Train Charisma", "Ascend"]
     // const tasks = ["Train Combat", "Vigilante", "Traffick Illegal Arms", "Ascend"]
     const timeout = 10 * 60 * 1000  // 10 minutes
     while (!is_locked(ns, "gang")) {
