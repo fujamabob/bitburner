@@ -57,9 +57,10 @@ export async function manage(ns: NS, spend_factor: number, profit_factor: number
                 }
             }
 
-            cost = ns.hacknet.getLevelUpgradeCost(i, 10)
+            const level_upgrade = 1
+            cost = ns.hacknet.getLevelUpgradeCost(i, level_upgrade)
             if (cost < budget) {
-                if (ns.hacknet.upgradeLevel(i, 10)) {
+                if (ns.hacknet.upgradeLevel(i, level_upgrade)) {
                     ns.print("Upgraded level on machine ", i);
                     budget -= cost
                 }

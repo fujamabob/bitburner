@@ -114,13 +114,13 @@ class HackTarget {
                 this.pipe.write('hack')
             }
             if (this.info.maxRam == 0) {
-                this.ns.alert(`Almost ran run_cmds.js on ${this.name} with ${this.info.maxRam}`)
+                // this.ns.alert(`Almost ran run_cmds.js on ${this.name} with ${this.info.maxRam}`)
                 return
             }
-            if (!await this.rpc.call('isRunning', "run_cmds.js", this.name, this.name)) {
-                await this.rpc.call('scp', "run_cmds.js", this.name, 'home')
+            if (!await this.rpc.call('isRunning', "share.js", this.name, this.name)) {
+                await this.rpc.call('scp', "share.js", this.name, 'home')
                 await this.rpc.call('scp', await this.rpc.call('ls', "home", "lib"), this.name, 'home')
-                await this.rpc.call('exec', "run_cmds.js", this.name, { threads: this.info.maxRam / 2 }, this.name)
+                await this.rpc.call('exec', "share.js", this.name, { threads: this.info.maxRam / 4 }, this.name)
             }
             await this.ns.asleep(sleep_time)
         }

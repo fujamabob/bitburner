@@ -1,3 +1,4 @@
+import { NS } from "@ns";
 
 /** A file somewhere on the network */
 type FileName = string;
@@ -6,14 +7,16 @@ type HostName = string;
 export class NetworkFile {
     filename: string;
     hostname: string;
+    ns: NS
 
-    constructor(filename: FileName, hostname: HostName) {
+    constructor(ns: NS, filename: FileName, hostname: HostName) {
         this.filename = filename
         this.hostname = hostname
+        this.ns = ns
     }
 
     public get exists(): boolean {
-        return ns.fileExists(this.filename, this.hostname)
+        return this.ns.fileExists(this.filename, this.hostname)
     }
 
     touch(): boolean {
@@ -30,18 +33,18 @@ export class NetworkFile {
     }
 
     rename(destination: FileName) {
-        ns.mv(this.hostname, this.filename, destination)
+        this.ns.mv(this.hostname, this.filename, destination)
         this.filename = destination
     }
 
     network_copy(destination: HostName): NetworkFile | null {
-        if (ns.scp(this.filename, destination, this.hostname))
-            return new NetworkFile(this.filename, destination)
+        if (this.ns.scp(this.filename, destination, this.hostname))
+            return new NetworkFile(this.ns, this.filename, destination)
         return null
     }
 
     delete(): boolean {
-        return ns.rm(this.filename, this.hostname)
+        return this.ns.rm(this.filename, this.hostname)
     }
 
     describe(): string {
@@ -50,33 +53,33 @@ export class NetworkFile {
 }
 
 /** A file on the local machine
- * 
+ *
  * NOTE: Extensions matter.  Try using .txt for random stuff.
 */
 export class LocalFile extends NetworkFile {
 
-    constructor(filename: FileName) {
+    constructor(ns: NS, filename: FileName) {
         // FIXME: Does undefined equate to ns.getHostname()?
-        super(filename, ns.getHostname())
+        super(ns, filename, ns.getHostname())
     }
 
     public get exists(): boolean {
-        return ns.fileExists(this.filename, this.hostname)
+        return this.ns.fileExists(this.filename, this.hostname)
     }
 
     rename(destination: FileName) {
-        ns.mv(this.hostname, this.filename, destination)
+        this.ns.mv(this.hostname, this.filename, destination)
         this.filename = destination
     }
 
     network_copy(destination: HostName): NetworkFile | null {
-        if (ns.scp(this.filename, destination, this.hostname))
-            return new NetworkFile(this.filename, destination)
+        if (this.ns.scp(this.filename, destination, this.hostname))
+            return new NetworkFile(this.ns, this.filename, destination)
         return null
     }
 
     delete(): boolean {
-        return ns.rm(this.filename, this.hostname)
+        return this.ns.rm(this.filename, this.hostname)
     }
 
     describe(): string {
@@ -84,21 +87,21 @@ export class LocalFile extends NetworkFile {
     }
 
     clear(): void {
-        ns.clear(this.filename)
+        this.ns.clear(this.filename)
     }
 
     write(data: string): void {
-        ns.write(this.filename, data, "w")
+        this.ns.write(this.filename, data, "w")
     }
 
     append(data: string): void {
-        ns.write(this.filename, data, "a")
+        this.ns.write(this.filename, data, "a")
     }
 
     read(): string | null {
         if (!this.exists)
             return null
-        return ns.read(this.filename)
+        return this.ns.read(this.filename)
     }
 
     touch(): boolean {
@@ -109,20 +112,20 @@ export class LocalFile extends NetworkFile {
     }
 }
 
-export function list_files(hostname: HostName, substring?: string): Array<NetworkFile> {
+export function list_files(ns: NS, hostname: HostName, substring?: string): Array<NetworkFile> {
     const retval = new Array<NetworkFile>()
     for (const filename of ns.ls(hostname, substring))
-        retval.push(new NetworkFile(filename, hostname))
+        retval.push(new NetworkFile(ns, filename, hostname))
     return retval
 }
 
 /** I'm not even exporting this because the actual internet has no place here.
  * If you -need- to use it, though, this is how it might work.
 */
-async function _dangerous_download(url: string, filename: FileName, hostname?: HostName): Promise<NetworkFile | null> {
-    if (!await ns.wget(url, filename, hostname))
-        return null
-    if (hostname === undefined)
-        hostname = ns.getHostname()
-    return new NetworkFile(filename, hostname)
-}
+// async function _dangerous_download(url: string, filename: FileName, hostname?: HostName): Promise<NetworkFile | null> {
+//     if (!await ns.wget(url, filename, hostname))
+//         return null
+//     if (hostname === undefined)
+//         hostname = ns.getHostname()
+//     return new NetworkFile(filename, hostname)
+// }
