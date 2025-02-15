@@ -22,7 +22,7 @@ export class NetworkFile {
     touch(): boolean {
         if (this.exists)
             return true
-        const touch = new LocalFile('/tmp/touchfile.txt')
+        const touch = new LocalFile(this.ns, '/tmp/touchfile.txt')
         touch.write("")
         const remote = touch.network_copy(this.hostname)
         touch.delete()
