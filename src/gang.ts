@@ -15,6 +15,7 @@ export async function main(ns: NS) {
         ['war', false],   // Warfare
         ['a', false],     // Ascend
         ['i', false],     // Buy items
+        ['karma', false], // Print karma
     ] as Schema
     const [flags,] = await init_script(ns, arg_schema)
 
@@ -58,6 +59,10 @@ export async function main(ns: NS) {
                 ns.gang.purchaseEquipment(name, item)
             }
         }
+    }
+    else if (flags.karma) {
+        ns.tprint(`Karma: ${ns.heart.break()} of -54000`)
+        return
     }
     const other = ns.gang.getOtherGangInformation()
     let do_war = true
