@@ -23,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
     if (flags.l) {
         ns.tprint('Personal Servers:')
         print_server(ns, 'home')
-        for (const name of ns.getPurchasedServers())
+        for (const name of get_my_servers(ns))
             print_server(ns, name)
     }
     else if (flags.b) {
@@ -55,7 +55,7 @@ export async function main(ns: NS): Promise<void> {
     else if (flags.u) {
         if (flags.a) {
             const ram = parseInt(args[0].toString())
-            for (const name of ns.getPurchasedServers()) {
+            for (const name of get_my_servers(ns)) {
                 ns.upgradePurchasedServer(name, ram)
                 print_server(ns, name)
             }
@@ -70,7 +70,7 @@ export async function main(ns: NS): Promise<void> {
     else if (flags.e) {
         if (flags.a) {
             const script = args[0].toString()
-            for (const name of ns.getPurchasedServers()) {
+            for (const name of get_my_servers(ns)) {
                 if (name == 'mr_manager')
                     continue
                 ns.scp(script, name, 'home')
@@ -92,7 +92,7 @@ export async function main(ns: NS): Promise<void> {
         const from = flags.f as string
         if (flags.a) {
             const files = new Array<string>(...args as string[])
-            for (const name of ns.getPurchasedServers()) {
+            for (const name of get_my_servers(ns)) {
                 if (name == 'mr_manager')
                     continue
                 ns.scp(files, name, from)
@@ -106,7 +106,7 @@ export async function main(ns: NS): Promise<void> {
     }
     else if (flags.k) {
         if (flags.a) {
-            for (const name of ns.getPurchasedServers()) {
+            for (const name of get_my_servers(ns)) {
                 if (name == 'mr_manager')
                     continue
                 ns.killall(name)
@@ -119,15 +119,21 @@ export async function main(ns: NS): Promise<void> {
     }
     else if (flags.h) {
         const should_hack = (ns: NS, name: string) => {
-            if (!ns.hasRootAccess(name))
+            if (ns.getServerRequiredHackingLevel(name) > ns.getPlayer().skills.hacking) {
                 return false
-            if (ns.getServerMaxMoney(name) <= 0)
+            }
+            if (!ns.hasRootAccess(name)) {
                 return false
+            }
+            if (ns.getServerMaxMoney(name) <= 0) {
+                return false
+            }
             return true
         }
         const servers = new Array<string>(...get_server_list(ns, 'home', should_hack))
+        servers.sort((a, b) => (ns.getServerRequiredHackingLevel(a) - ns.getServerRequiredHackingLevel(b)))
         if (flags.a) {
-            for (const name of ns.getPurchasedServers()) {
+            for (const name of get_my_servers(ns)) {
                 if (name == 'mr_manager')
                     continue
                 for (const target of servers) {
@@ -161,4 +167,15 @@ function run_script(ns: NS, script: string, name: string, threads: number, args:
     ns.scp(ns.ls('home', '/lib'), name, 'home')
     ns.exec(script, name, { threads: threads }, ...args)
 
+}
+
+function get_my_servers(ns: NS): Array<string> {
+    const my_servers = new Array<string>()
+    for (const name of ns.getPurchasedServers()) {
+        my_servers.push(name)
+    }
+    for (let i = 0; i < ns.hacknet.numNodes(); i++) {
+        my_servers.push(`hacknet-server-${i}`)
+    }
+    return my_servers
 }
