@@ -122,77 +122,77 @@ function replacer(_key: unknown, value: unknown) {
     }
 }
 
-function reviver(_key: unknown, value: unknown) {
-    if (typeof value === 'object' && value !== null) {
-        if (value.dataType === 'Map') {
-            return new Map(value.value);
-        }
-    }
-    return value;
-}
+// function reviver(_key: unknown, value: unknown) {
+//     if (typeof value === 'object' && value !== null) {
+//         if (value.dataType === 'Map') {
+//             return new Map(value.value);
+//         }
+//     }
+//     return value;
+// }
 
 
-class _Game3 extends Game {
-    private state_map: Map<string, [number, number]>
+// class _Game3 extends Game {
+//     private state_map: Map<string, [number, number]>
 
-    constructor(ns: NS, opponent: GoOpponent, size: 5 | 7 | 9 | 13 = 5) {
-        super(ns, opponent, size)
-        this.state_map = new Map<string, [number, number]>
-        try {
-            this.state_map = JSON.parse(ns.read('/conf/go.txt'), reviver)
-        }
-        catch (_err) {
-            // Keep the defaults
-        }
-    }
+//     constructor(ns: NS, opponent: GoOpponent, size: 5 | 7 | 9 | 13 = 5) {
+//         super(ns, opponent, size)
+//         this.state_map = new Map<string, [number, number]>
+//         try {
+//             this.state_map = JSON.parse(ns.read('/conf/go.txt'), reviver)
+//         }
+//         catch (_err) {
+//             // Keep the defaults
+//         }
+//     }
 
-    dump_state() {
-        this.ns.print(new Array(this.state_map))
-        const state = JSON.stringify(this.state_map, replacer, 2)
-        this.ns.write('/conf/go.txt', state, 'w')
-    }
+//     dump_state() {
+//         this.ns.print(new Array(this.state_map))
+//         const state = JSON.stringify(this.state_map, replacer, 2)
+//         this.ns.write('/conf/go.txt', state, 'w')
+//     }
 
-    load_state() {
-        const state = JSON.parse(this.ns.read('/conf/go.txt'), reviver)
-        this.ns.print(`State = ${state}`)
-        return state
-    }
+//     load_state() {
+//         const state = JSON.parse(this.ns.read('/conf/go.txt'), reviver)
+//         this.ns.print(`State = ${state}`)
+//         return state
+//     }
 
-    async move() {
-        const history = this.ns.go.getMoveHistory()
-        const state = this.ns.go.getBoardState()
-        const key = state.join('')
-        const move = this.state_map.get(key)
-        this.ns.print(move)
-        if (move === undefined) {
-            this.ns.print('Waiting for player to move')
-            while (this.ns.go.getMoveHistory().length == history.length)
-                await this.ns.asleep(1000)
-            const response = await this.ns.go.opponentNextTurn()
-            const [t1, t2] = this.ns.go.getMoveHistory().slice(0, 2)
-            for (let i = 0; i < 5; i++)
-                for (let j = 0; j < 5; j++)
-                    if (t1[i][j] != t2[i][j])
-                        this.state_map.set(key, [i, j])
-            this.dump_state()
-            if (response.type == 'pass')
-                await this.ns.go.passTurn()
-        }
-        else {
-            const [i, j] = move
-            const response = await this.ns.go.makeMove(i, j)
-            if (response.type == 'pass')
-                await this.ns.go.passTurn()
-        }
+//     async move() {
+//         const history = this.ns.go.getMoveHistory()
+//         const state = this.ns.go.getBoardState()
+//         const key = state.join('')
+//         const move = this.state_map.get(key)
+//         this.ns.print(move)
+//         if (move === undefined) {
+//             this.ns.print('Waiting for player to move')
+//             while (this.ns.go.getMoveHistory().length == history.length)
+//                 await this.ns.asleep(1000)
+//             const response = await this.ns.go.opponentNextTurn()
+//             const [t1, t2] = this.ns.go.getMoveHistory().slice(0, 2)
+//             for (let i = 0; i < 5; i++)
+//                 for (let j = 0; j < 5; j++)
+//                     if (t1[i][j] != t2[i][j])
+//                         this.state_map.set(key, [i, j])
+//             this.dump_state()
+//             if (response.type == 'pass')
+//                 await this.ns.go.passTurn()
+//         }
+//         else {
+//             const [i, j] = move
+//             const response = await this.ns.go.makeMove(i, j)
+//             if (response.type == 'pass')
+//                 await this.ns.go.passTurn()
+//         }
 
-    }
+//     }
 
-}
+// }
 
 export async function main(ns: NS): Promise<void> {
     ns.disableLog('asleep')
     ns.clearLog()
-    const game = new Game(ns, ns.args[0] ?? "Daedalus")
+    const game = new Game(ns, (ns.args[0] ?? "Daedalus") as GoOpponent)
     for (; ;)
         await game.play()
     // ns.go.analysis.getChains
