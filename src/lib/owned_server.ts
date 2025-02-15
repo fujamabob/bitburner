@@ -4,7 +4,9 @@ import { is_locked } from "./lock";
 export async function manage(ns: NS, base_name: string, spend_factor = 0.1): Promise<void> {
     let ram = 2;
 
-    while (ns.getPurchasedServers().length < 25) {
+    const server_limit = ns.getPurchasedServerLimit()
+    ns.print(`Server limit: ${server_limit}`)
+    while (ns.getPurchasedServers().length < server_limit) {
         const budget = ns.getPlayer().money * spend_factor
         if (!is_locked(ns, "owned_servers")) {
             if (ns.getPurchasedServerCost(ram) <= budget) {
